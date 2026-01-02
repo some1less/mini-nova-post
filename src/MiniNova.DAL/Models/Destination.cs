@@ -1,4 +1,4 @@
-namespace API.DAL.Models;
+namespace MiniNova.DAL.Models;
 
 public class Destination
 {

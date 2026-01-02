@@ -1,7 +1,7 @@
-using API.DAL.Models;
 using Microsoft.EntityFrameworkCore;
+using MiniNova.DAL.Models;
 
-namespace API.DAL.Context;
+namespace MiniNova.DAL.Context;
 
 public class NovaDbContext : DbContext
 {
