@@ -8,7 +8,31 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.14" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.22">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.22" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\bin\Debug\net8.0\API.deps.json" />
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\bin\Debug\net8.0\API.runtimeconfig.json" />
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\bin\Debug\net8.0\API.staticwebassets.endpoints.json" />
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\bin\Debug\net8.0\appsettings.Development.json" />
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\bin\Debug\net8.0\appsettings.json" />
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\obj\API.csproj.nuget.dgspec.json" />
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\obj\Debug\net8.0\API.sourcelink.json" />
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\obj\Debug\net8.0\rbcswa.dswa.cache.json" />
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json" />
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\obj\Debug\net8.0\rjsmrazor.dswa.cache.json" />
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\obj\Debug\net8.0\rpswa.dswa.cache.json" />
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\obj\Debug\net8.0\staticwebassets.build.endpoints.json" />
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\obj\Debug\net8.0\staticwebassets.build.json" />
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\obj\project.assets.json" />
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\obj\project.packagespec.json" />
+    <_ContentIncludedByDefault Remove="mini-nova-post\src\API\Properties\launchSettings.json" />
   </ItemGroup>
 
 </Project>
