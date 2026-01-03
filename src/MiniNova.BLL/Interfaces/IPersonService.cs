@@ -1,5 +1,4 @@
 using MiniNova.BLL.DTO.People;
-using MiniNova.DAL.Models;
 
 namespace MiniNova.BLL.Interfaces;
 
