@@ -438,5 +438,5 @@ Desktop.ini
 .idea/
 bin/
 obj/
-src/API/*.json
-*.sql
+src/MiniNova.API/*.json
+scripts/*.sql
