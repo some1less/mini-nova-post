@@ -3,7 +3,7 @@ using MiniNova.BLL.Interfaces;
 
 namespace MiniNova.API.Controllers
 {
-    [Route("api/operator")]
+    [Route("api/operators")]
     [ApiController]
     public class OperatorController : ControllerBase
     {
