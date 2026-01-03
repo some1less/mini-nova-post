@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniNova.BLL.DTO.People;
 using MiniNova.BLL.Interfaces;
@@ -8,6 +9,7 @@ namespace MiniNova.API.Controllers
 {
     [Route("api/people")]
     [ApiController]
+    [Authorize]
     public class PersonController : ControllerBase
     {
         private readonly IPersonService _personService;
