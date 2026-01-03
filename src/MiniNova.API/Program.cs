@@ -21,6 +21,7 @@ builder.Services.AddDbContext<NovaDbContext>(options =>
 
 builder.Services.AddScoped<IPersonService, PersonService>();
 builder.Services.AddScoped<IOperatorService, OperatorService>();
+builder.Services.AddScoped<IPackageService, PackageService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

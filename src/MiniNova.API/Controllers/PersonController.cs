@@ -52,7 +52,7 @@ namespace MiniNova.API.Controllers
             try
             {
                 var created = await _personService.CreatePersonAsync(person);
-                return CreatedAtAction("GetPerson", new { id = created.Id }, created);
+                return CreatedAtAction(nameof(GetPerson), new { id = created.Id }, created);
             }  catch (Exception ex)
             {
                 return BadRequest(ex.Message);

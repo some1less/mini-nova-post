@@ -1,32 +1,34 @@
 using Microsoft.AspNetCore.Mvc;
 using MiniNova.BLL.Interfaces;
 
-namespace MiniNova.API.Controllers;
-
-[Route("api/operator")]
-[ApiController]
-public class OperatorController : ControllerBase
+namespace MiniNova.API.Controllers
 {
-    private readonly IOperatorService _operatorService;
+    [Route("api/operator")]
+    [ApiController]
+    public class OperatorController : ControllerBase
+    {
+        private readonly IOperatorService _operatorService;
 
-    public OperatorController(IOperatorService operatorService)
-    {
-        _operatorService = operatorService;
-    }
-    
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetOperator(int id)
-    {
-        try
+        public OperatorController(IOperatorService operatorService)
         {
-            var oper = await _operatorService.GetOperatorByIdAsync(id);
-            if (oper == null) return NotFound();
-                
-            return Ok(oper);
-                
-        } catch (Exception ex)
+            _operatorService = operatorService;
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetOperator(int id)
         {
-            return BadRequest(ex.Message);
+            try
+            {
+                var oper = await _operatorService.GetOperatorByIdAsync(id);
+                if (oper == null) return NotFound();
+
+                return Ok(oper);
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

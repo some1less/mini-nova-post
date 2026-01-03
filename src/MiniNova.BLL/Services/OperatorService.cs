@@ -25,10 +25,9 @@ public class OperatorService : IOperatorService
 
         return new OperatorByIdDTO()
         {
+            Id = oper.Id,
             Name = $"{oper.Person.FirstName} {oper.Person.LastName}",
             Occupation = oper.Occupation.Name,
         };
-
-
     }
 }

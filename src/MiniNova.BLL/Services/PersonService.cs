@@ -54,12 +54,15 @@ public class PersonService : IPersonService
 
     public async Task<CreatePersonResponseDTO> CreatePersonAsync(CreatePersonDTO personDto)
     {
+        
+        string? phoneNumber = string.IsNullOrWhiteSpace(personDto.Phone) ? null : personDto.Phone;
+        
         var person = new Person()
         {
             FirstName = personDto.FirstName,
             LastName = personDto.LastName,
             Email = personDto.Email,
-            Phone = personDto.Phone
+            Phone = phoneNumber
         };
         
         _dbContext.People.Add(person);
@@ -69,8 +72,8 @@ public class PersonService : IPersonService
         {
             Id = person.Id,
             FullName = $"{person.FirstName} {person.LastName}",
-            Email = personDto.Email,
-            Phone = personDto.Phone
+            Email = person.Email,
+            Phone = person.Phone
         };
     }
 
@@ -84,12 +87,10 @@ public class PersonService : IPersonService
         person.FirstName = updatePerson.FirstName;
         person.LastName = updatePerson.LastName;
         person.Email = updatePerson.Email;
-        if (updatePerson.Phone != null)
-        {
-            person.Phone = updatePerson.Phone;
-        }
+        person.Phone = string.IsNullOrWhiteSpace(updatePerson.Phone) ? null : updatePerson.Phone;
 
-        _dbContext.Entry(person).State = EntityState.Modified;
+        // commented due automatic tracking by EF
+        // _dbContext.Entry(person).State = EntityState.Modified; 
         await _dbContext.SaveChangesAsync();
 
     }
