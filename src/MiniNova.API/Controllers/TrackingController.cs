@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniNova.BLL.DTO.Tracking;
 using MiniNova.BLL.Interfaces;
@@ -6,6 +7,7 @@ namespace MiniNova.API.Controllers
 {
     [Route("api/trackings")]
     [ApiController]
+    [Authorize]
     public class TrackingController : ControllerBase
     {
         
@@ -40,7 +42,9 @@ namespace MiniNova.API.Controllers
             try
             {
                 var email = User.Identity?.Name;
-                if (email == null) return Unauthorized();
+                
+                if (string.IsNullOrEmpty(email)) 
+                    return Unauthorized(new { message = "User email not found in token" });
 
                 var result = await _trackingService.AddTrackingAsync(dto, email);
                 return Ok(result);
@@ -49,9 +53,49 @@ namespace MiniNova.API.Controllers
             {
                 return Forbid(ex.Message);
             }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+        
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateTrackingDTO dto)
+        {
+            try
+            {
+                await _trackingService.UpdateTrackingAsync(id, dto);
+                return Ok(new { message = "Tracking status updated successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+        
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteStatus(int id)
+        {
+            try
+            {
+                await _trackingService.DeleteTrackingAsync(id);
+                return Ok(new { message = "Tracking record deleted successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
             }
         }
     }
