@@ -20,6 +20,7 @@ builder.Services.AddDbContext<NovaDbContext>(options =>
     options.UseSqlite(connectionString));
 
 builder.Services.AddScoped<IPersonService, PersonService>();
+builder.Services.AddScoped<IOperatorService, OperatorService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
