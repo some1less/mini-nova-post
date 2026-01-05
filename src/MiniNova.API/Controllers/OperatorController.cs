@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniNova.BLL.Interfaces;
 
@@ -5,6 +6,7 @@ namespace MiniNova.API.Controllers
 {
     [Route("api/operators")]
     [ApiController]
+    [Authorize]
     public class OperatorController : ControllerBase
     {
         private readonly IOperatorService _operatorService;

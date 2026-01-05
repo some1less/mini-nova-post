@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using MiniNova.BLL.DTO.Package;
@@ -7,6 +8,7 @@ namespace MiniNova.API.Controllers
 {
     [Route("api/packages")]
     [ApiController]
+    [Authorize]
     public class PackageController : ControllerBase
     {
         private readonly IPackageService _packageService;

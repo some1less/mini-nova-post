@@ -28,7 +28,7 @@ namespace MiniNova.API.Controllers
                 return Ok(people);
             } catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
         }
 
@@ -38,17 +38,17 @@ namespace MiniNova.API.Controllers
             try
             {
                 var person = await _personService.GetPersonByIdAsync(id);
-                if (person == null) return NotFound();
+                if (person == null) return NotFound(new { error = $"Person with id {id} not found" });
                 
                 return Ok(person);
                 
             } catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
         }
 
-        [HttpPost]
+        /*[HttpPost]
         public async Task<IActionResult> PostPerson([FromBody] CreatePersonDTO person)
         {
             try
@@ -57,30 +57,45 @@ namespace MiniNova.API.Controllers
                 return CreatedAtAction(nameof(GetPerson), new { id = created.Id }, created);
             }  catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
             
-        }
+        }*/
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPerson(int id, [FromBody] UpdatePersonDTO updatePerson)
+        [Authorize(Roles = "Admin, Operator, User")]
+        public async Task<IActionResult> PutPerson(int id, [FromBody] PersonDTO updatePerson)
         {
             try
             {
+                var currentLogin = User.Identity?.Name;
+                
+                var fullAccess = User.IsInRole("Admin") || User.IsInRole("Operator");
+
+                if (!fullAccess)
+                {
+                    var currentPersonId = await _personService.GetPersonIdByLoginAsync(currentLogin!);
+                    if (currentPersonId == null) return Unauthorized(new { error = "User profile not found" });
+
+                    if (currentPersonId != id) return Forbid();
+                }
+                
+                
                 await _personService.UpdatePersonAsync(updatePerson, id);
                 return NoContent();
 
             } catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound(new { error = ex.Message });
             } catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
             
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeletePerson(int id)
         {
             try
@@ -89,10 +104,10 @@ namespace MiniNova.API.Controllers
                 return NoContent();
             }  catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound(new { error = ex.Message });
             } catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
         }
         

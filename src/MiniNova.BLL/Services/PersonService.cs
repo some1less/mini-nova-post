@@ -52,7 +52,7 @@ public class PersonService : IPersonService
         };
     }
 
-    public async Task<CreatePersonResponseDTO> CreatePersonAsync(CreatePersonDTO personDto)
+    public async Task<CreatePersonResponseDTO> CreatePersonAsync(PersonDTO personDto)
     {
         
         string? phoneNumber = string.IsNullOrWhiteSpace(personDto.Phone) ? null : personDto.Phone;
@@ -77,7 +77,7 @@ public class PersonService : IPersonService
         };
     }
 
-    public async Task UpdatePersonAsync(UpdatePersonDTO updatePerson, int personId)
+    public async Task UpdatePersonAsync(PersonDTO updatePerson, int personId)
     {
         var person = await _dbContext.People
             .FirstOrDefaultAsync(p => p.Id == personId);
@@ -103,5 +103,13 @@ public class PersonService : IPersonService
         
         _dbContext.People.Remove(person);
         await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<int?> GetPersonIdByLoginAsync(string login)
+    {
+        var account = await _dbContext.Accounts
+            .FirstOrDefaultAsync(a => a.Login == login);
+        
+        return account?.PersonId;
     }
 }

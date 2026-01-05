@@ -37,6 +37,7 @@ namespace MiniNova.API.Controllers
         }
         
         [HttpPost]
+        [Authorize(Roles = "Admin, Operator")]
         public async Task<IActionResult> AddStatus([FromBody] CreateTrackingDTO dto)
         {
             try
@@ -64,6 +65,7 @@ namespace MiniNova.API.Controllers
         }
         
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin, Operator")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateTrackingDTO dto)
         {
             try
@@ -82,6 +84,7 @@ namespace MiniNova.API.Controllers
         }
         
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteStatus(int id)
         {
             try
