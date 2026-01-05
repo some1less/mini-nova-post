@@ -1,6 +1,6 @@
 namespace MiniNova.BLL.DTO.People;
 
-public class CreatePersonResponseDTO
+public class PersonResponseDTO
 {
     public int Id { get; set; }
     public required string FullName { get; set; }

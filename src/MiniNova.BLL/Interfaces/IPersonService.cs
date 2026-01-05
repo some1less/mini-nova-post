@@ -5,9 +5,9 @@ namespace MiniNova.BLL.Interfaces;
 public interface IPersonService
 {
     Task<IEnumerable<PersonAllDTO>> GetAllAsync();
-    Task<PersonByIdDTO?> GetPersonByIdAsync(int personId);
+    Task<PersonResponseDTO?> GetPersonByIdAsync(int personId);
     
-    Task<CreatePersonResponseDTO> CreatePersonAsync(PersonDTO person);
+    Task<PersonResponseDTO> CreatePersonAsync(PersonDTO person);
     Task UpdatePersonAsync(PersonDTO person, int personId);
     
     Task DeletePersonAsync(int personId);

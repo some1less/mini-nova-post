@@ -44,7 +44,7 @@ public class TrackingService : ITrackingService
         });
     }
 
-    public async Task<TrackingResponseDTO> AddTrackingAsync(CreateTrackingDTO trackingDto, string operatorLogin)
+    public async Task<TrackingResponseDTO> AddTrackingAsync(TrackingDTO trackingDto, string operatorLogin)
     {
         var account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.Login == operatorLogin);
         if (account == null) throw new KeyNotFoundException($"Account with login {operatorLogin} not found");
@@ -77,7 +77,7 @@ public class TrackingService : ITrackingService
         };
     }
 
-    public async Task UpdateTrackingAsync(int trackingId, UpdateTrackingDTO trackingDto)
+    public async Task UpdateTrackingAsync(int trackingId, TrackingDTO trackingDto)
     {
         var tracking = await _dbContext.Trackings.FirstOrDefaultAsync(t => t.Id == trackingId);
         

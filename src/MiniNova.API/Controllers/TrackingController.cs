@@ -38,7 +38,7 @@ namespace MiniNova.API.Controllers
         
         [HttpPost]
         [Authorize(Roles = "Admin, Operator")]
-        public async Task<IActionResult> AddStatus([FromBody] CreateTrackingDTO dto)
+        public async Task<IActionResult> AddStatus([FromBody] TrackingDTO dto)
         {
             try
             {
@@ -66,7 +66,7 @@ namespace MiniNova.API.Controllers
         
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin, Operator")]
-        public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateTrackingDTO dto)
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] TrackingDTO dto)
         {
             try
             {

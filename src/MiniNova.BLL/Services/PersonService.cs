@@ -33,7 +33,7 @@ public class PersonService : IPersonService
         return peopleToDto;
     }
 
-    public async Task<PersonByIdDTO?> GetPersonByIdAsync(int id)
+    public async Task<PersonResponseDTO?> GetPersonByIdAsync(int id)
     {
         var person = await _dbContext.People
             .FirstOrDefaultAsync(p => p.Id == id);
@@ -43,7 +43,7 @@ public class PersonService : IPersonService
             return null;
         }
 
-        return new PersonByIdDTO()
+        return new PersonResponseDTO()
         {
             Id = person.Id, 
             FullName = $"{person.FirstName} {person.LastName}",
@@ -52,7 +52,7 @@ public class PersonService : IPersonService
         };
     }
 
-    public async Task<CreatePersonResponseDTO> CreatePersonAsync(PersonDTO personDto)
+    public async Task<PersonResponseDTO> CreatePersonAsync(PersonDTO personDto)
     {
         
         string? phoneNumber = string.IsNullOrWhiteSpace(personDto.Phone) ? null : personDto.Phone;
@@ -68,7 +68,7 @@ public class PersonService : IPersonService
         _dbContext.People.Add(person);
         await _dbContext.SaveChangesAsync();
 
-        return new CreatePersonResponseDTO()
+        return new PersonResponseDTO()
         {
             Id = person.Id,
             FullName = $"{person.FirstName} {person.LastName}",

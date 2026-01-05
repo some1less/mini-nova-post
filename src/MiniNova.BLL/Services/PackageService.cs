@@ -52,14 +52,14 @@ public class PackageService : IPackageService
         return new PackageByIdDTO()
         {
             Id = package.Id,
-            Sender = new PersonByIdDTO()
+            Sender = new PersonResponseDTO()
             {
                 Id = package.Sender.Id,
                 FullName = $"{package.Sender.FirstName} {package.Sender.LastName}",
                 Email = package.Sender.Email,
                 Phone = package.Sender.Phone,
             },
-            Receiver = new PersonByIdDTO()
+            Receiver = new PersonResponseDTO()
             {
                 Id = package.Receiver.Id,
                 FullName = $"{package.Receiver.FirstName} {package.Receiver.LastName}",
