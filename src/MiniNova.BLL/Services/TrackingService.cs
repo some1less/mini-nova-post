@@ -44,16 +44,15 @@ public class TrackingService : ITrackingService
         });
     }
 
-    public async Task<TrackingResponseDTO> AddTrackingAsync(CreateTrackingDTO trackingDto, string operatorEmail)
+    public async Task<TrackingResponseDTO> AddTrackingAsync(CreateTrackingDTO trackingDto, string operatorLogin)
     {
-        var person = await _dbContext.People
-            .FirstOrDefaultAsync(p => p.Email == operatorEmail);
-        if (person == null) throw new KeyNotFoundException($"Person with email '{operatorEmail}' not found");
+        var account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.Login == operatorLogin);
+        if (account == null) throw new KeyNotFoundException($"Account with login {operatorLogin} not found");
         
         var oper = await _dbContext.Operators
             .Include(o => o.Occupation)
             .Include(p => p.Person)
-            .FirstOrDefaultAsync(p => p.PersonId == person.Id);
+            .FirstOrDefaultAsync(p => p.PersonId == account.PersonId);
 
         if (oper == null) throw new UnauthorizedAccessException("Current user is not an Operator");
 
@@ -67,6 +66,7 @@ public class TrackingService : ITrackingService
         
         await  _dbContext.Trackings.AddAsync(tracking);
         await _dbContext.SaveChangesAsync();
+        
         return new TrackingResponseDTO
         {
             Id = tracking.Id,

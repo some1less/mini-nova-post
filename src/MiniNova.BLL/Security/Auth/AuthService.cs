@@ -55,6 +55,9 @@ public class AuthService : IAuthService
         var email = await _dbContext.People.AnyAsync(a => a.Email == request.Email, cancellationToken);
         if (email) throw new InvalidOperationException("User with this email already exists");
         
+        var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.Name == "User", cancellationToken);
+        if (userRole == null) throw new InvalidOperationException("Role with name 'User' not found");
+        
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
 
         try
@@ -69,12 +72,12 @@ public class AuthService : IAuthService
             
             _dbContext.People.Add(newPerson);
             await _dbContext.SaveChangesAsync(cancellationToken);
-
+            
             var newAccount = new Account()
             {
                 Login = request.Login,
                 Password = "",
-                RoleId = 3, // 1 - admin 2 - operator 3 - user
+                RoleId =  userRole.Id, // 1 - admin 2 - operator 3 - user
                 PersonId = newPerson.Id,
             };
             

@@ -41,12 +41,12 @@ namespace MiniNova.API.Controllers
         {
             try
             {
-                var email = User.Identity?.Name;
+                var login = User.Identity?.Name;
                 
-                if (string.IsNullOrEmpty(email)) 
+                if (string.IsNullOrEmpty(login)) 
                     return Unauthorized(new { message = "User email not found in token" });
 
-                var result = await _trackingService.AddTrackingAsync(dto, email);
+                var result = await _trackingService.AddTrackingAsync(dto, login);
                 return Ok(result);
             }
             catch (UnauthorizedAccessException ex)
