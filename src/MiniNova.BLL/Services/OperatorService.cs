@@ -14,6 +14,20 @@ public class OperatorService : IOperatorService
         _dbContext = dbContext;
     }
     
+    public async Task<List<OperatorByIdDTO>> GetAllOperatorsAsync()
+    {
+        return await _dbContext.Operators
+            .Include(o => o.Person)
+            .Include(o => o.Occupation)
+            .Select(oper => new OperatorByIdDTO
+            {
+                Id = oper.Id,
+                Name = $"{oper.Person.FirstName} {oper.Person.LastName}",
+                Occupation = oper.Occupation.Name,
+            })
+            .ToListAsync();
+    }
+
     public async Task<OperatorByIdDTO?> GetOperatorByIdAsync(int operatorId)
     {
         var oper = await _dbContext.Operators

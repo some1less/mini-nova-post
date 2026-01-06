@@ -16,6 +16,21 @@ namespace MiniNova.API.Controllers
             _operatorService = operatorService;
         }
 
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetOperators()
+        {
+            try
+            {
+                var operators = await _operatorService.GetAllOperatorsAsync();
+                return Ok(operators);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetOperator(int id)
