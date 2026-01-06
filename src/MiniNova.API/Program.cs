@@ -48,6 +48,18 @@ builder.Services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+// ----- CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173") // using vite
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 // ------ AUTHENTICATION (JWT) -----
 builder.Services.AddAuthentication(options =>
     {
@@ -108,6 +120,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowReactApp");
 
 app.UseAuthentication(); 
 
