@@ -20,10 +20,12 @@ public class TrackingService : ITrackingService
     public async Task<IEnumerable<TrackingResponseDTO>> GetHistoryByPackageIdAsync(int packageId)
     {
         var package = await _dbContext.Packages
+            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == packageId);
         if (package == null) throw new KeyNotFoundException($"Package with id {packageId} not found");
         
         var history = await _dbContext.Trackings
+            .AsNoTracking()
             .Where(t => t.PackageId == packageId)
             .Include(p => p.Operator!.Person)
             .Include(p => p.Operator!.Occupation)

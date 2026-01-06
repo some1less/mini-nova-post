@@ -63,6 +63,7 @@ public class PackageService : IPackageService
             .Include(d => d.Destination)
             .Include(s => s.Sender)
             .Include(r => r.Receiver)
+            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == packageId);
 
         if (package == null) return null;

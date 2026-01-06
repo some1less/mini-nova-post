@@ -46,6 +46,7 @@ public class PersonService : IPersonService
     public async Task<PersonResponseDTO?> GetPersonByIdAsync(int id)
     {
         var person = await _dbContext.People
+            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id);
 
         if (person == null)
