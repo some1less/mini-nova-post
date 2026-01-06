@@ -30,9 +30,16 @@ This section describes the standard process for setting up the local development
 ### Build Process
 
 1. **Clone the repository** to your local machine.
-2. **Environment Configuration:** Create an appsettings.json file in the src/MiniNova.API directory. Use the template below to ensure the JWT authentication and Database connection are properly configured:
+2. **Environment Configuration:** Create an `appsettings.json` file in the `src/MiniNova.API` directory. Use the template below to ensure the JWT Authentication and Database connection are properly configured:
 ```json
 {
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
   "ConnectionStrings": {
     "MNPConnection": "Data Source=nova.db"
   },
