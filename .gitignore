@@ -439,4 +439,3 @@ Desktop.ini
 bin/
 obj/
 src/MiniNova.API/*.json
-scripts/*.sql
