@@ -42,7 +42,7 @@ namespace MiniNova.API.Controllers
         {
             try
             {
-                var login = User.Identity?.Name;
+                var login = User.FindFirst("name")?.Value;
                 
                 if (string.IsNullOrEmpty(login)) 
                     return Unauthorized(new { message = "User email not found in token" });

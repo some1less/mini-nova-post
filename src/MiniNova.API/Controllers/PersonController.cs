@@ -20,6 +20,7 @@ namespace MiniNova.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetPeople([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
@@ -34,10 +35,26 @@ namespace MiniNova.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin, Operator, User")]
         public async Task<IActionResult> GetPerson(int id)
         {
             try
             {
+                var currentLogin = User.FindFirst("name")?.Value;
+                
+                var hasFullAccess = User.IsInRole("Admin") || User.IsInRole("Operator");
+
+                if (!hasFullAccess)
+                {
+                    var requestingPersonId = await _personService.GetPersonIdByLoginAsync(currentLogin!);
+                    
+                    if (requestingPersonId == null) 
+                        return Unauthorized(new { error = "User profile not found" });
+
+                    if (requestingPersonId != id) 
+                        return Forbid();
+                }
+
                 var person = await _personService.GetPersonByIdAsync(id);
                 if (person == null) return NotFound(new { error = $"Person with id {id} not found" });
                 
@@ -55,7 +72,7 @@ namespace MiniNova.API.Controllers
         {
             try
             {
-                var currentLogin = User.Identity?.Name;
+                var currentLogin = User.FindFirst("name")?.Value;
                 
                 var fullAccess = User.IsInRole("Admin") || User.IsInRole("Operator");
 
