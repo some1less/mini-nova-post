@@ -4,12 +4,15 @@ import apiClient from '../../api/apiClient';
 import { Search, Filter, Eye, Edit3, Truck, ArrowRight } from 'lucide-react';
 import './OperatorDashboard.css';
 
+import StatusModal from '../../components/StatusModal';
+
 const OperatorDashboard = () => {
     const navigate = useNavigate();
     const [packages, setPackages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
 
+    const [selectedPkg, setSelectedPkg] = useState(null);
     useEffect(() => {
         const fetchPackages = async () => {
             try {
@@ -24,6 +27,12 @@ const OperatorDashboard = () => {
 
         fetchPackages();
     }, []);
+
+    const handleUpdateSuccess = (id, newStatus) => {
+        setPackages(prev => prev.map(p =>
+            p.id === id ? { ...p, status: newStatus } : p
+        ));
+    };
 
     const getStatusClass = (status) => {
         switch (status?.toLowerCase()) {
@@ -105,11 +114,9 @@ const OperatorDashboard = () => {
                                         <span className="sender" title={pkg.sender?.fullName}>
                                             {pkg.sender?.fullName}
                                         </span>
-
                                         <div className="arrow-icon">
                                             <ArrowRight size={16} />
                                         </div>
-
                                         <span className="receiver" title={pkg.receiver?.fullName}>
                                             {pkg.receiver?.fullName}
                                         </span>
@@ -135,7 +142,8 @@ const OperatorDashboard = () => {
                                     <button className="action-btn secondary" onClick={() => navigate(`/package/${pkg.id}`)}>
                                         <Eye size={16} /> View
                                     </button>
-                                    <button className="action-btn primary">
+
+                                    <button className="action-btn primary" onClick={() => setSelectedPkg(pkg)}>
                                         <Edit3 size={16} /> Update
                                     </button>
                                 </td>
@@ -152,6 +160,14 @@ const OperatorDashboard = () => {
                     </table>
                 )}
             </div>
+
+            {selectedPkg && (
+                <StatusModal
+                    pkg={selectedPkg}
+                    onClose={() => setSelectedPkg(null)}
+                    onUpdateSuccess={handleUpdateSuccess}
+                />
+            )}
         </div>
     );
 };
