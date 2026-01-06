@@ -80,7 +80,7 @@ public class TrackingService : ITrackingService
         };
     }
 
-    public async Task UpdateTrackingAsync(int trackingId, TrackingDTO trackingDto)
+    public async Task UpdateTrackingAsync(int trackingId, UpdateTrackingDTO trackingDto)
     {
         var tracking = await _dbContext.Trackings.FirstOrDefaultAsync(t => t.Id == trackingId);
         

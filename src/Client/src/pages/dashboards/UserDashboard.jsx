@@ -59,7 +59,7 @@ const UserDashboard = () => {
 
                             <div className="card-header">
                                 <span className="pkg-id">#{pkg.id}</span>
-                                <span className="pkg-status active">Active</span>
+                                <span className="pkg-status active">{pkg.status}</span>
                             </div>
 
                             <div className="route-row">

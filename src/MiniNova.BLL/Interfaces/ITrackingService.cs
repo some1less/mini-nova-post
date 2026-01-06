@@ -7,6 +7,6 @@ public interface ITrackingService
     
     Task<IEnumerable<TrackingResponseDTO>> GetHistoryByPackageIdAsync(int packageId);
     Task<TrackingResponseDTO> AddTrackingAsync(TrackingDTO trackingDto, string operatorEmail);
-    Task UpdateTrackingAsync(int trackingId, TrackingDTO trackingDto);
+    Task UpdateTrackingAsync(int trackingId, UpdateTrackingDTO trackingDto);
     Task DeleteTrackingAsync(int trackingId);
 }

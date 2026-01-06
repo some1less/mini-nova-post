@@ -66,7 +66,7 @@ namespace MiniNova.API.Controllers
         
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin, Operator")]
-        public async Task<IActionResult> UpdateStatus(int id, [FromBody] TrackingDTO dto)
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateTrackingDTO dto)
         {
             try
             {

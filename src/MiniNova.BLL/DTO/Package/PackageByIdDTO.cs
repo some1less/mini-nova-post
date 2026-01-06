@@ -1,4 +1,5 @@
 using MiniNova.BLL.DTO.People;
+using MiniNova.BLL.DTO.Tracking;
 
 namespace MiniNova.BLL.DTO.Package;
 
@@ -13,5 +14,8 @@ public class PackageByIdDTO
     public decimal Weight { get; set; }
     
     public required string DestinationAddress { get; set; }
+    
+    public string Status { get; set; } = "Registered";
+    public IEnumerable<TrackingResponseDTO> History { get; set; } = new List<TrackingResponseDTO>();
     
 }

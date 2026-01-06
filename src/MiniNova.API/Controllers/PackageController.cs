@@ -79,7 +79,7 @@ namespace MiniNova.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Operator")]
+        [Authorize(Roles = "Admin, Operator")]
         public async Task<IActionResult> PutPackage(int id, [FromBody] UpdatePackageDTO updatePackage)
         {
             try

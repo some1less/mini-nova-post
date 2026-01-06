@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MiniNova.BLL.DTO.Package;
 using MiniNova.BLL.DTO.People;
+using MiniNova.BLL.DTO.Tracking;
 using MiniNova.BLL.Interfaces;
 using MiniNova.BLL.Pagination;
 using MiniNova.DAL.Context;
@@ -63,10 +64,18 @@ public class PackageService : IPackageService
             .Include(d => d.Destination)
             .Include(s => s.Sender)
             .Include(r => r.Receiver)
+            .Include(p => p.Trackings).ThenInclude(t => t.Operator).ThenInclude(o => o.Person)
+            .Include(p => p.Trackings).ThenInclude(t => t.Operator).ThenInclude(o => o.Occupation)
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == packageId);
 
         if (package == null) return null;
+        
+        var sortedHistory = package.Trackings.OrderByDescending(t => t.UpdateTime).ToList();
+        
+        var lastStatus = package.Trackings
+            .OrderByDescending(t => t.UpdateTime)
+            .FirstOrDefault()?.Status ?? "Registered";
         
         return new PackageByIdDTO()
         {
@@ -89,7 +98,19 @@ public class PackageService : IPackageService
             Size = package.Size,
             Weight = package.Weight,
 
-            DestinationAddress = $"{package.Destination.Street}, {package.Destination.City}"
+            DestinationAddress = $"{package.Destination.Street}, {package.Destination.City}",
+            
+            Status = lastStatus,
+            History = sortedHistory.Select(t => new TrackingResponseDTO
+            {
+                Id = t.Id,
+                Status = t.Status,
+                UpdateTime = t.UpdateTime.ToString("yyyy-MM-dd HH:mm"),
+                OperatorName = t.Operator != null 
+                    ? $"{t.Operator.Person.FirstName} {t.Operator.Person.LastName}" 
+                    : "System",
+                OperatorRole = t.Operator?.Occupation.Name ?? "Auto"
+            })
         };
     }
 
@@ -177,7 +198,8 @@ public class PackageService : IPackageService
         var query = _dbContext.Packages
             .Include(p => p.Sender)
             .Include(p => p.Receiver)     
-            .Include(p => p.Destination)  
+            .Include(p => p.Destination)
+            .Include(p => p.Trackings)
             .Where(p => p.SenderId == userId || p.ReceiverId == userId);
 
         var totalCount = await query.CountAsync();
@@ -188,31 +210,42 @@ public class PackageService : IPackageService
             .Take(pageSize)
             .ToListAsync();
 
-        var packageDtos = packages.Select(p => new PackageByIdDTO
+        var packageDtos = packages.Select(p =>
         {
-            Id = p.Id,
-            Description = p.Description,
-            Size = p.Size,
-            Weight = p.Weight,
+            var lastStatus = p.Trackings
+                .OrderByDescending(t => t.UpdateTime)
+                .FirstOrDefault()?.Status ?? "Registered";
 
-            DestinationAddress = $"{p.Destination.Street}, {p.Destination.City}",
-        
-            Sender = new PersonResponseDTO
+
+            return new PackageByIdDTO
             {
-                Id = p.Sender.Id,
-                FullName = $"{p.Sender.FirstName} {p.Sender.LastName}",
-                Email = p.Sender.Email,
-                Phone = p.Sender.Phone
-            },
-        
-            Receiver = new PersonResponseDTO
-            {
-                Id = p.Receiver.Id,
-                FullName = $"{p.Receiver.FirstName} {p.Receiver.LastName}",
-                Email = p.Receiver.Email,
-                Phone = p.Receiver.Phone
-            }
+                Id = p.Id,
+                Description = p.Description,
+                Size = p.Size,
+                Weight = p.Weight,
+
+                DestinationAddress = $"{p.Destination.Street}, {p.Destination.City}",
+
+                Sender = new PersonResponseDTO
+                {
+                    Id = p.Sender.Id,
+                    FullName = $"{p.Sender.FirstName} {p.Sender.LastName}",
+                    Email = p.Sender.Email,
+                    Phone = p.Sender.Phone
+                },
+
+                Receiver = new PersonResponseDTO
+                {
+                    Id = p.Receiver.Id,
+                    FullName = $"{p.Receiver.FirstName} {p.Receiver.LastName}",
+                    Email = p.Receiver.Email,
+                    Phone = p.Receiver.Phone
+                },
+                
+                Status = lastStatus
+            };
         });
+        
         
         return new PagedResponse<PackageByIdDTO>
         {

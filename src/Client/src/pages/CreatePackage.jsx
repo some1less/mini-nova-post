@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import apiClient from '../api/apiClient';
 import { useNavigate } from 'react-router-dom';
-import { Box, MapPin, User, Scale, ArrowLeft } from 'lucide-react';
+import { Box, MapPin, User, Scale, ArrowLeft, AlertCircle } from 'lucide-react';
 import './CreatePackage.css';
 
 const CreatePackage = () => {
     const navigate = useNavigate();
     const [destinations, setDestinations] = useState([]);
+    const [error, setError] = useState(null);
 
     const [formData, setFormData] = useState({
         receiverEmail: '',
@@ -22,10 +23,13 @@ const CreatePackage = () => {
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+        if (error) setError(null);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
+
         try {
             await apiClient.post('/packages', {
                 ...formData,
@@ -33,20 +37,20 @@ const CreatePackage = () => {
                 destinationId: parseInt(formData.destinationId)
             });
             navigate('/');
-        } catch (error) {
-            console.error("Error:", error);
+        } catch (err) {
+            console.error("Error:", err);
 
             let errorMessage = "Error creating package.";
 
-            if (error.response) {
-                if (error.response.data.errors) {
-                    errorMessage = Object.values(error.response.data.errors).flat().join('\n');
-                } else if (error.response.data.error) {
-                    errorMessage = error.response.data.error;
+            if (err.response) {
+                if (err.response.data.errors) {
+                    errorMessage = Object.values(err.response.data.errors).flat().join('\n');
+                } else if (err.response.data.error) {
+                    errorMessage = err.response.data.error;
                 }
             }
 
-            alert(errorMessage);
+            setError(errorMessage);
         }
     };
 
@@ -60,14 +64,18 @@ const CreatePackage = () => {
                 <h1 className="create-title">New Shipment</h1>
                 <p className="create-subtitle">Fill in the details below</p>
 
+                {error && (
+                    <div className="error-banner">
+                        <AlertCircle size={20} />
+                        <span>{error}</span>
+                    </div>
+                )}
+
                 <form onSubmit={handleSubmit}>
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label><User size={16}/> Receiver Email</label>
-                            <input
-                                name="receiverEmail" type="email" placeholder="receiver@email.com" onChange={handleChange} required
-                            />
-                        </div>
+
+                    <div className="form-group">
+                        <label><User size={16}/> Receiver Email</label>
+                        <input name="receiverEmail" type="email" placeholder="receiver@email.com" onChange={handleChange} required />
                     </div>
 
                     <div className="form-group">
@@ -80,9 +88,10 @@ const CreatePackage = () => {
                             <label><Scale size={16}/> Weight (kg)</label>
                             <input name="weight" type="number" step="0.1" placeholder="0.0" onChange={handleChange} required />
                         </div>
+
                         <div className="form-group">
                             <label><Box size={16}/> Size</label>
-                            <select name="size" onChange={handleChange} value={formData.size}> {/* Додав value для контрольованого інпута */}
+                            <select name="size" onChange={handleChange} value={formData.size}>
                                 <option value="S">Small (S)</option>
                                 <option value="M">Medium (M)</option>
                                 <option value="L">Large (L)</option>
@@ -93,8 +102,8 @@ const CreatePackage = () => {
 
                     <div className="form-group">
                         <label><MapPin size={16}/> Destination</label>
-                        <select name="destinationId" onChange={handleChange} required>
-                            <option value="">Select a city...</option>
+                        <select name="destinationId" onChange={handleChange} required defaultValue="">
+                            <option value="" disabled>Select a city...</option>
                             {destinations.map(d => (
                                 <option key={d.id} value={d.id}>{d.address}</option>
                             ))}

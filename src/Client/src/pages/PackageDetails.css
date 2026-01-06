@@ -89,11 +89,25 @@
 .participants-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 1rem;
 }
 
 .participant {
     flex: 1;
+    min-width: 0;
+}
+
+.participant:last-child {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.participant:last-child .p-info {
+    flex-direction: row-reverse;
+    text-align: right;
 }
 
 .label {
@@ -113,19 +127,23 @@
 
 .icon {
     color: #2563eb;
-    margin-top: 2px;
+    margin-top: 3px;
+    flex-shrink: 0;
 }
 
 .sub-text {
     font-size: 0.85rem;
     color: #6b7280;
     margin-top: 2px;
+    line-height: 1.4;
 }
 
 .arrow {
     color: #d1d5db;
     font-size: 1.5rem;
     padding: 0 1rem;
+    margin-top: 1.6rem;
+    align-self: flex-start;
 }
 
 .info-grid {
@@ -171,4 +189,78 @@
     height: 10px;
     background: #2563eb;
     border-radius: 50%;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.operator-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: right;
+}
+
+
+.operator-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.operator-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.operator-role {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #888;
+    margin-top: 2px;
+    font-weight: 500;
+}
+
+.operator-avatar {
+    width: 36px;
+    height: 36px;
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: #555;
+    flex-shrink: 0;
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+.history-main {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    background: #2563eb;
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px #dbeafe;
 }

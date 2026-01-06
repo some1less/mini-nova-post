@@ -99,13 +99,35 @@ const PackageDetails = () => {
 
                 <div className="history-placeholder">
                     <h3>Tracking History</h3>
-                    <div className="history-item">
-                        <div className="dot"></div>
-                        <div>
-                            <strong>Created</strong>
-                            <div className="sub-text">Package registered in system</div>
+
+                    {pkg.history && pkg.history.length > 0 ? (
+                        <div className="history-list">
+                            {pkg.history.map((record) => (
+                                <div key={record.id} className="history-item">
+                                    <div className="history-main">
+                                        <div className="dot"></div>
+                                        <div>
+                                            <strong>{record.status}</strong>
+                                            <div className="sub-text">{record.updateTime}</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="operator-profile">
+                                        <div className="operator-info">
+                                            <span className="operator-name">{record.operatorName}</span>
+                                            <span className="operator-role">{record.operatorRole}</span>
+                                        </div>
+                                        
+                                        <div className="operator-avatar">
+                                            {record.operatorName.slice(0, 2).toUpperCase()}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    </div>
+                    ) : (
+                        <p className="sub-text">No tracking updates yet.</p>
+                    )}
                 </div>
             </div>
         </div>
