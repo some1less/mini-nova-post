@@ -1,6 +1,8 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using MiniNova.BLL.DTO.Auth;
 using MiniNova.BLL.Security.Auth;
+using ValidationException = MiniNova.BLL.Exceptions.ValidationException;
 
 namespace MiniNova.API.Controllers
 {
@@ -38,7 +40,13 @@ namespace MiniNova.API.Controllers
             {
                 await _authService.RegisterAsync(request, cancellationToken);
                 return Ok(new { message = "Registration Successful" });
-            } catch (Exception ex)
+            }
+            catch (ValidationException ex)
+            {
+                ModelState.AddModelError(ex.FieldName, ex.Message);
+                return ValidationProblem(ModelState);
+            } 
+            catch (Exception ex)
             {
                 return BadRequest(new { error = ex.Message });
             }

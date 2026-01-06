@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MiniNova.BLL.DTO.Auth;
+using MiniNova.BLL.Exceptions;
 using MiniNova.BLL.Security.Tokens;
 using MiniNova.DAL.Context;
 using MiniNova.DAL.Models;
@@ -50,10 +51,10 @@ public class AuthService : IAuthService
     public async Task RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
         var login = await _dbContext.Accounts.AnyAsync(a => a.Login == request.Login, cancellationToken);
-        if (login) throw new InvalidOperationException("User with this login already exists");
+        if (login) throw new ValidationException("login", "Login is already taken");
         
         var email = await _dbContext.People.AnyAsync(a => a.Email == request.Email, cancellationToken);
-        if (email) throw new InvalidOperationException("User with this email already exists");
+        if (email) throw new ValidationException("email", "User with this email already exists");
         
         var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.Name == "User", cancellationToken);
         if (userRole == null) throw new InvalidOperationException("Role with name 'User' not found");

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import apiClient from '../api/apiClient';
 import { useNavigate, Link } from 'react-router-dom';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, CheckCircle } from 'lucide-react';
+import './Register.css';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -18,6 +19,8 @@ const Register = () => {
     const [errors, setErrors] = useState({});
     const [generalError, setGeneralError] = useState('');
 
+    const [showSuccess, setShowSuccess] = useState(false);
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
         if (errors[e.target.name]) {
@@ -32,8 +35,13 @@ const Register = () => {
 
         try {
             await apiClient.post('/auth/register', formData);
-            alert('Registration successful! Please sign in.');
-            navigate('/login');
+
+            setShowSuccess(true);
+
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000);
+
         } catch (err) {
             console.error("Registration error:", err);
 
@@ -43,12 +51,15 @@ const Register = () => {
                     const formattedErrors = {};
 
                     Object.keys(serverErrors).forEach((key) => {
+
                         const fieldName = key.charAt(0).toLowerCase() + key.slice(1);
                         formattedErrors[fieldName] = serverErrors[key][0];
                     });
 
                     setErrors(formattedErrors);
-                } else if (typeof err.response.data === 'string') {
+                }
+
+                else if (typeof err.response.data === 'string') {
                     setGeneralError(err.response.data);
                 } else if (err.response.data.message) {
                     setGeneralError(err.response.data.message);
@@ -61,120 +72,109 @@ const Register = () => {
         }
     };
 
-    const inputContainerStyle = { marginBottom: '1rem' };
-
-    const inputStyle = (hasError) => ({
-        width: '100%',
-        padding: '0.75rem',
-        border: `1px solid ${hasError ? '#ef4444' : '#d1d5db'}`,
-        borderRadius: '6px',
-        fontSize: '14px',
-        outline: 'none',
-        transition: 'border-color 0.2s'
-    });
-
-    const errorTextStyle = {
-        color: '#ef4444',
-        fontSize: '0.8rem',
-        marginTop: '0.25rem',
-        display: 'block'
-    };
-
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f3f4f6' }}>
-            <form onSubmit={handleSubmit} style={{ background: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', width: '360px' }}>
+        <div className="register-container">
+            
+            {showSuccess && (
+                <div className="success-toast">
+                    <CheckCircle size={24} />
+                    <span>Registration successful! Redirecting...</span>
+                </div>
+            )}
 
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', color: '#2563eb' }}>
+            <form onSubmit={handleSubmit} className="register-form">
+
+                <div className="logo-container">
                     <UserPlus size={40} />
                 </div>
-                <h2 style={{ textAlign: 'center', marginBottom: '0.5rem', color: '#111827' }}>Create Account</h2>
-                <p style={{ textAlign: 'center', marginBottom: '1.5rem', color: '#6b7280', fontSize: '0.9rem' }}>Join the logistics revolution</p>
+                <h2 className="register-title">Create Account</h2>
+                <p className="register-subtitle">Join the logistics future</p>
 
                 {generalError && (
-                    <div style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem', fontSize: '0.9rem', textAlign: 'center' }}>
+                    <div className="general-error">
                         {generalError}
                     </div>
                 )}
 
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <div style={{ width: '50%', marginBottom: '1rem' }}>
+                <div className="input-row">
+                    <div className="input-half">
                         <input
                             name="firstName"
                             type="text"
                             placeholder="First Name *"
                             onChange={handleChange}
-                            style={inputStyle(errors.firstName)}
+                            className={`register-input ${errors.firstName ? 'error' : ''}`}
                             required
                         />
-                        {errors.firstName && <span style={errorTextStyle}>{errors.firstName}</span>}
+                        {errors.firstName && <span className="field-error-text">{errors.firstName}</span>}
                     </div>
-                    <div style={{ width: '50%', marginBottom: '1rem' }}>
+                    <div className="input-half">
                         <input
                             name="lastName"
                             type="text"
                             placeholder="Last Name *"
                             onChange={handleChange}
-                            style={inputStyle(errors.lastName)}
+                            className={`register-input ${errors.lastName ? 'error' : ''}`}
                             required
                         />
-                        {errors.lastName && <span style={errorTextStyle}>{errors.lastName}</span>}
+                        {errors.lastName && <span className="field-error-text">{errors.lastName}</span>}
                     </div>
                 </div>
 
-                <div style={inputContainerStyle}>
+                <div className="input-group">
                     <input
                         name="email"
                         type="email"
                         placeholder="Email *"
                         onChange={handleChange}
-                        style={inputStyle(errors.email)}
+                        className={`register-input ${errors.email ? 'error' : ''}`}
                         required
                     />
-                    {errors.email && <span style={errorTextStyle}>{errors.email}</span>}
+                    {errors.email && <span className="field-error-text">{errors.email}</span>}
                 </div>
 
-                <div style={inputContainerStyle}>
+                <div className="input-group">
                     <input
                         name="phone"
                         type="tel"
                         placeholder="Phone (+48...) (Optional)"
                         onChange={handleChange}
-                        style={inputStyle(errors.phone)}
+                        className={`register-input ${errors.phone ? 'error' : ''}`}
                     />
-                    {errors.phone && <span style={errorTextStyle}>{errors.phone}</span>}
+                    {errors.phone && <span className="field-error-text">{errors.phone}</span>}
                 </div>
 
-                <div style={inputContainerStyle}>
+                <div className="input-group">
                     <input
                         name="login"
                         type="text"
                         placeholder="Login *"
                         onChange={handleChange}
-                        style={inputStyle(errors.login)}
+                        className={`register-input ${errors.login ? 'error' : ''}`}
                         required
                     />
-                    {errors.login && <span style={errorTextStyle}>{errors.login}</span>}
+                    {errors.login && <span className="field-error-text">{errors.login}</span>}
                 </div>
 
-                <div style={inputContainerStyle}>
+                <div className="input-group">
                     <input
                         name="password"
                         type="password"
                         placeholder="Password *"
                         onChange={handleChange}
-                        style={inputStyle(errors.password)}
+                        className={`register-input ${errors.password ? 'error' : ''}`}
                         required
                     />
-                    {errors.password && <span style={errorTextStyle}>{errors.password}</span>}
+                    {errors.password && <span className="field-error-text">{errors.password}</span>}
                 </div>
 
-                <button type="submit" style={{ width: '100%', padding: '0.75rem', background: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', marginTop: '0.5rem' }}>
+                <button type="submit" className="register-button">
                     Sign Up
                 </button>
 
-                <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem', color: '#6b7280' }}>
+                <div className="register-footer">
                     Already have an account?{' '}
-                    <Link to="/login" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: '600' }}>
+                    <Link to="/login" className="register-link">
                         Sign In
                     </Link>
                 </div>
