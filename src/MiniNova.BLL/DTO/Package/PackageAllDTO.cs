@@ -9,4 +9,6 @@ public class PackageAllDTO
     public required PersonAllPackagesDTO Receiver { get; set; }
     public required string Description { get; set; }
     
+    public string DestinationAddress { get; set; } = string.Empty;
+    public string Status { get; set; } = "Registered";
 }

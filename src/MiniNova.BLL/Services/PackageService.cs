@@ -44,7 +44,14 @@ public class PackageService : IPackageService
                     FullName = $"{p.Receiver.FirstName} {p.Receiver.LastName}",
                     Email = $"{p.Receiver.Email}",
                     Phone = $"{p.Receiver.Phone}",
-                }
+                },
+                DestinationAddress = p.Destination != null 
+                    ? $"{p.Destination.Street}, {p.Destination.City}" 
+                    : "Unknown",
+                Status = p.Trackings
+                    .OrderByDescending(t => t.UpdateTime)
+                    .Select(t => t.Status)
+                    .FirstOrDefault() ?? "Registered",
                 
             })
             .ToListAsync();
