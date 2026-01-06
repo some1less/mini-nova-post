@@ -1,37 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
 .auth-container {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f3f4f6;
+    background-color: #f9fafb;
 }
 
 .auth-form {
     background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 320px;
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    width: 340px;
 }
 
 .logo-container {
     display: flex;
     justify-content: center;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     color: #2563eb;
 }
 
 .auth-title {
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     color: #111827;
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.025em;
 }
 
 .error-message {
+    background-color: #fef2f2;
     color: #ef4444;
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
     text-align: center;
+    font-weight: 500;
 }
 
 .input-group {
@@ -44,12 +59,16 @@
 
 .auth-input {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 14px;
+    padding: 0.875rem 1rem;
+    border: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    border-radius: 12px;
+    font-size: 0.95rem;
     outline: none;
     box-sizing: border-box;
+    transition: all 0.2s ease;
+    color: #1f2937;
+    font-family: 'Inter', sans-serif;
 }
 
 .auth-input:focus {
@@ -59,19 +78,27 @@
 
 .auth-button {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.875rem;
     background: #2563eb;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 12px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 14px;
-    transition: background 0.2s;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.01em;
 }
 
 .auth-button:hover {
     background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.auth-button:active {
+    transform: translateY(0);
 }
 
 .auth-footer {
@@ -88,5 +115,6 @@
 }
 
 .auth-link:hover {
-    text-decoration: underline;
+    color: #1d4ed8;
+    text-decoration: none;
 }
