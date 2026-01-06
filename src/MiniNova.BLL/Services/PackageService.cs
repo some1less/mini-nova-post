@@ -119,6 +119,11 @@ public class PackageService : IPackageService
         if (destination == null)
             throw new KeyNotFoundException($"Destination with id {packageDto.DestinationId} not found");
     
+        if (sender.Id == receiver.Id)
+        {
+            throw new ArgumentException("You cannot send a package to yourself via our service.");
+        }
+        
         var package = new Package()
         {
             SenderId = sender.Id,
