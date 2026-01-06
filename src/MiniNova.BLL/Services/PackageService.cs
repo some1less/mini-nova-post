@@ -158,4 +158,55 @@ public class PackageService : IPackageService
         _dbContext.Packages.Remove(package);
         await _dbContext.SaveChangesAsync();
     }
+
+    public async Task<PagedResponse<PackageByIdDTO>> GetUserPackagesAsync(int userId, int page, int pageSize)
+    {
+        var query = _dbContext.Packages
+            .Include(p => p.Sender)
+            .Include(p => p.Receiver)     
+            .Include(p => p.Destination)  
+            .Where(p => p.SenderId == userId || p.ReceiverId == userId);
+
+        var totalCount = await query.CountAsync();
+
+        var packages = await query
+            .OrderByDescending(p => p.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var packageDtos = packages.Select(p => new PackageByIdDTO
+        {
+            Id = p.Id,
+            Description = p.Description,
+            Size = p.Size,
+            Weight = p.Weight,
+
+            DestinationAddress = $"{p.Destination.Street}, {p.Destination.City}",
+        
+            Sender = new PersonResponseDTO
+            {
+                Id = p.Sender.Id,
+                FullName = $"{p.Sender.FirstName} {p.Sender.LastName}",
+                Email = p.Sender.Email,
+                Phone = p.Sender.Phone
+            },
+        
+            Receiver = new PersonResponseDTO
+            {
+                Id = p.Receiver.Id,
+                FullName = $"{p.Receiver.FirstName} {p.Receiver.LastName}",
+                Email = p.Receiver.Email,
+                Phone = p.Receiver.Phone
+            }
+        });
+        
+        return new PagedResponse<PackageByIdDTO>
+        {
+            Items = packageDtos,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
 }

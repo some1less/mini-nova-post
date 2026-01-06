@@ -11,5 +11,5 @@ public interface IPackageService
     Task<PackageByIdDTO> CreatePackageAsync(CreatePackageDTO packageDto);
     Task UpdatePackageAsync(UpdatePackageDTO package, int packageId);
     Task DeletePackageAsync(int packageId);
-    
+    Task<PagedResponse<PackageByIdDTO>> GetUserPackagesAsync(int userId, int page, int pageSize);
 }

@@ -4,24 +4,20 @@ import { useContext } from 'react';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
+import Dashboard from './pages/Dashboard';
+
+import CreatePackage from './pages/CreatePackage';
+import PackageDetails from './pages/PackageDetails';
+
 const ProtectedRoute = ({ children }) => {
     const { user } = useContext(AuthContext);
-    if (!user) {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
         return <Navigate to="/login" replace />;
     }
     return children;
 };
-
-const Dashboard = () => {
-    const { user, logout } = useContext(AuthContext);
-    return (
-        <div style={{ padding: '2rem' }}>
-            <h1>Welcome, {user.login}!</h1>
-            <p>Role: {user.role}</p>
-            <button onClick={logout}>Logout</button>
-        </div>
-    )
-}
 
 function App() {
     return (
@@ -31,14 +27,9 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
 
-                    <Route
-                        path="/"
-                        element={
-                            <ProtectedRoute>
-                                <Dashboard />
-                            </ProtectedRoute>
-                        }
-                    />
+                    <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                    <Route path="/create-package" element={<ProtectedRoute><CreatePackage /></ProtectedRoute>} />
+                    <Route path="/package/:id" element={<ProtectedRoute><PackageDetails /></ProtectedRoute>} />  
                 </Routes>
             </Router>
         </AuthProvider>
