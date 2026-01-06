@@ -20,13 +20,14 @@ namespace MiniNova.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPeople()
+        public async Task<IActionResult> GetPeople([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var people =  await _personService.GetAllAsync();
-                return Ok(people);
-            } catch (Exception ex)
+                var result = await _personService.GetAllAsync(page, pageSize);
+                return Ok(result);
+            } 
+            catch (Exception ex)
             {
                 return BadRequest(new { error = ex.Message });
             }
@@ -47,20 +48,6 @@ namespace MiniNova.API.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
-
-        /*[HttpPost]
-        public async Task<IActionResult> PostPerson([FromBody] CreatePersonDTO person)
-        {
-            try
-            {
-                var created = await _personService.CreatePersonAsync(person);
-                return CreatedAtAction(nameof(GetPerson), new { id = created.Id }, created);
-            }  catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-            
-        }*/
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin, Operator, User")]

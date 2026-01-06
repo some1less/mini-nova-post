@@ -25,10 +25,8 @@ public class TrackingService : ITrackingService
         
         var history = await _dbContext.Trackings
             .Where(t => t.PackageId == packageId)
-            .Include(o => o.Operator)
-            .ThenInclude(p => p.Person)
-            .Include(o => o.Operator)
-            .ThenInclude(o => o.Occupation)
+            .Include(p => p.Operator!.Person)
+            .Include(p => p.Operator!.Occupation)
             .OrderByDescending(t => t.UpdateTime)
             .ToListAsync();
 
@@ -46,6 +44,9 @@ public class TrackingService : ITrackingService
 
     public async Task<TrackingResponseDTO> AddTrackingAsync(TrackingDTO trackingDto, string operatorLogin)
     {
+        var package = await _dbContext.Packages.FirstOrDefaultAsync(p => p.Id == trackingDto.PackageId);
+        if (package == null) throw new KeyNotFoundException($"Package with id {trackingDto.PackageId} not found");
+        
         var account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.Login == operatorLogin);
         if (account == null) throw new KeyNotFoundException($"Account with login {operatorLogin} not found");
         

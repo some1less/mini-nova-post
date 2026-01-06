@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MiniNova.BLL.DTO.Package;
 using MiniNova.BLL.DTO.People;
 using MiniNova.BLL.Interfaces;
+using MiniNova.BLL.Pagination;
 using MiniNova.DAL.Context;
 using MiniNova.DAL.Models;
 
@@ -17,26 +18,43 @@ public class PackageService : IPackageService
         _dbContext = dbContext;
     }
     
-    public async Task<IEnumerable<PackageAllDTO>> GetAllAsync()
+    public async Task<PagedResponse<PackageAllDTO>> GetAllAsync(int page, int pageSize)
     {
-        return await _dbContext.Packages
-            .Select(pkg => new PackageAllDTO
-            {
-                Id = pkg.Id,
-                Sender = new PersonAllPackagesDTO
+        var query = _dbContext.Packages.AsQueryable();
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .OrderByDescending(p => p.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(p => new PackageAllDTO 
+            { 
+                Id = p.Id,
+                Description = p.Description,
+                Sender = new PersonAllPackagesDTO()
                 {
-                    FullName = pkg.Sender.FirstName + " " + pkg.Sender.LastName,
-                    Email = pkg.Sender.Email,
-                    Phone = pkg.Sender.Phone
+                    FullName = $"{p.Sender.FirstName} {p.Sender.LastName}",
+                    Email = $"{p.Sender.Email}",
+                    Phone = $"{p.Sender.Phone}",
                 },
-                Receiver = new PersonAllPackagesDTO
+                Receiver = new PersonAllPackagesDTO()
                 {
-                    FullName = pkg.Receiver.FirstName + " " + pkg.Receiver.LastName,
-                    Email = pkg.Receiver.Email,
-                    Phone = pkg.Receiver.Phone
-                },
-                Description = pkg.Description,
-            }).ToListAsync();
+                    FullName = $"{p.Receiver.FirstName} {p.Receiver.LastName}",
+                    Email = $"{p.Receiver.Email}",
+                    Phone = $"{p.Receiver.Phone}",
+                }
+                
+            })
+            .ToListAsync();
+
+        return new PagedResponse<PackageAllDTO>
+        {
+            Items = items,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
     }
 
     public async Task<PackageByIdDTO?> GetPackageByIdAsync(int packageId)

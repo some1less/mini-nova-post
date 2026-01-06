@@ -26,7 +26,7 @@ namespace MiniNova.API.Controllers
             }
             catch (UnauthorizedAccessException ex) 
             {
-                return Unauthorized($"Access denied: {ex.Message}");
+                return Unauthorized(new { error = ex.Message });
             }
         }
 

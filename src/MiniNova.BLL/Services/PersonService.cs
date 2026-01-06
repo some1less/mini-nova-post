@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MiniNova.BLL.DTO.People;
 using MiniNova.BLL.Interfaces;
+using MiniNova.BLL.Pagination;
 using MiniNova.DAL.Context;
 using MiniNova.DAL.Models;
 
@@ -16,21 +17,30 @@ public class PersonService : IPersonService
         _dbContext = dbContext;
     }
     
-    public async Task<IEnumerable<PersonAllDTO>> GetAllAsync()
+    public async Task<PagedResponse<PersonAllDTO>> GetAllAsync(int page = 1, int pageSize = 10)
     {
-        var people = await _dbContext.People.ToListAsync();
+        var query = _dbContext.People.AsNoTracking().AsQueryable();
 
-        var peopleToDto = new List<PersonAllDTO>();
-        foreach (var person in people)
-        {
-            peopleToDto.Add(new PersonAllDTO()
-            {
-                Id = person.Id,
-                FullName = $"{person.FirstName} {person.LastName}",
-            });
-        }
+        var totalCount = await query.CountAsync();
         
-        return peopleToDto;
+        var items = await query
+            .OrderBy(p => p.LastName)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(p => new PersonAllDTO
+            {
+                Id = p.Id,
+                FullName = $"{p.FirstName} {p.LastName}",
+            })
+            .ToListAsync();
+
+        return new PagedResponse<PersonAllDTO>
+        {
+            Items = items,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
     }
 
     public async Task<PersonResponseDTO?> GetPersonByIdAsync(int id)

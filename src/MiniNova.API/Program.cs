@@ -78,22 +78,25 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // ----- DATABASE SEEDING -----
-using (var scope = app.Services.CreateScope())
+if (app.Environment.IsDevelopment())
 {
-    var db =  scope.ServiceProvider.GetRequiredService<NovaDbContext>();
-    db.Database.EnsureDeleted();
-    db.Database.Migrate();
-    var path = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "scripts", "insert.sql");
-    
-    if (File.Exists(path))
+    using (var scope = app.Services.CreateScope())
     {
-        var sql = File.ReadAllText(path);
-        db.Database.ExecuteSqlRaw(sql);
-        Console.WriteLine("Database seeded successfully from SQL file!");
-    }
-    else
-    {
-        Console.WriteLine($"SQL File not found at: {path}");
+        var db = scope.ServiceProvider.GetRequiredService<NovaDbContext>();
+        db.Database.EnsureDeleted();
+        db.Database.Migrate();
+        var path = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "scripts", "insert.sql");
+
+        if (File.Exists(path))
+        {
+            var sql = File.ReadAllText(path);
+            db.Database.ExecuteSqlRaw(sql);
+            Console.WriteLine("Database seeded successfully from SQL file!");
+        }
+        else
+        {
+            Console.WriteLine($"SQL File not found at: {path}");
+        }
     }
 }
 

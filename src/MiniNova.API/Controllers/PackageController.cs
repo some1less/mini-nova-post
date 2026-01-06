@@ -19,18 +19,17 @@ namespace MiniNova.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPackages()
+        public async Task<IActionResult> GetPackages([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         { 
             try
             {
-                var packages =  await _packageService.GetAllAsync();
-                return Ok(packages);
-                
-            } catch (Exception ex)
+                var result = await _packageService.GetAllAsync(page, pageSize);
+                return Ok(result);
+            } 
+            catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
-
         }
 
         [HttpGet("{id}")]
@@ -44,7 +43,7 @@ namespace MiniNova.API.Controllers
                 return Ok(package);
             } catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
         }
         
@@ -58,11 +57,11 @@ namespace MiniNova.API.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound(new { error = ex.Message });
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
         }
 
@@ -76,11 +75,11 @@ namespace MiniNova.API.Controllers
             } 
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound(new { error = ex.Message });
             } 
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
         }
 
@@ -94,11 +93,11 @@ namespace MiniNova.API.Controllers
             } 
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound(new { error = ex.Message });
             } 
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
         }
 
