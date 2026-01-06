@@ -208,3 +208,23 @@
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+.pkg-status.status-active {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.pkg-status.status-transit {
+    background-color: #fef3c7;
+    color: #b45309;
+}
+
+.pkg-status.status-finished {
+    background-color: #e0f2fe;
+    color: #075985;
+}
+
+.pkg-status.status-canceled {
+    background-color: #fee2e2;
+    color: #991b1b;
+}

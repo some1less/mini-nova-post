@@ -4,6 +4,16 @@ import apiClient from '../api/apiClient';
 import { Package, MapPin, User, ArrowLeft } from 'lucide-react';
 import './PackageDetails.css';
 
+const getStatusClass = (status) => {
+    switch (status?.toLowerCase()) {
+        case 'registered': return 'status-registered';
+        case 'delivered': return 'status-finished';
+        case 'canceled': return 'status-canceled';
+        case 'in transit': return 'status-transit';
+        default: return '';
+    }
+};
+
 const PackageDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -37,7 +47,9 @@ const PackageDetails = () => {
                 <div className="details-header">
                     <div>
                         <h1 className="pkg-title">Package #{pkg.id}</h1>
-                        <span className="status-badge">Active</span>
+                        <span className={`status-badge ${getStatusClass(pkg.status)}`}>
+                            {pkg.status}
+                        </span>
                     </div>
                     <div className="qr-placeholder">QR</div>
                 </div>

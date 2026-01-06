@@ -56,15 +56,30 @@
 }
 
 .status-badge {
-    background: #d1fae5;
-    color: #065f46;
-    padding: 4px 12px;
-    border-radius: 99px;
-    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
     font-size: 0.8rem;
-    text-transform: uppercase;
-    margin-top: 0.5rem;
-    display: inline-block;
+}
+
+.status-registered {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-canceled {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.status-finished {
+    background-color: #e0f2fe;
+    color: #075985;
+}
+
+.status-transit {
+    background-color: #fef3c7;
+    color: #b45309;
 }
 
 .qr-placeholder {

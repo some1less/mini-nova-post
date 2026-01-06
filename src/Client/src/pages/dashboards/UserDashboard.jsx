@@ -15,6 +15,16 @@ const UserDashboard = () => {
     const [page, setPage] = useState(1);
     const pageSize = 5;
 
+    const getStatusClass = (status) => {
+        switch (status?.toLowerCase()) {
+            case 'active': return 'status-active';
+            case 'delivered': return 'status-finished';
+            case 'canceled': return 'status-canceled';
+            case 'in transit': return 'status-transit';
+            default: return '';
+        }
+    };
+    
     const fetchPackages = async () => {
         setLoading(true);
         try {
@@ -59,7 +69,9 @@ const UserDashboard = () => {
 
                             <div className="card-header">
                                 <span className="pkg-id">#{pkg.id}</span>
-                                <span className="pkg-status active">{pkg.status}</span>
+                                <span className={`pkg-status ${getStatusClass(pkg.status)}`}>
+                                    {pkg.status}
+                                </span>
                             </div>
 
                             <div className="route-row">
