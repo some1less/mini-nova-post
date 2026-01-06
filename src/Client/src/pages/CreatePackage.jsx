@@ -9,7 +9,6 @@ const CreatePackage = () => {
     const [destinations, setDestinations] = useState([]);
 
     const [formData, setFormData] = useState({
-        senderEmail: '',
         receiverEmail: '',
         description: '',
         size: 'S',
@@ -64,12 +63,10 @@ const CreatePackage = () => {
                 <form onSubmit={handleSubmit}>
                     <div className="form-row">
                         <div className="form-group">
-                            <label><User size={16}/> Sender Email</label>
-                            <input name="senderEmail" type="email" placeholder="your@email.com" onChange={handleChange} required />
-                        </div>
-                        <div className="form-group">
                             <label><User size={16}/> Receiver Email</label>
-                            <input name="receiverEmail" type="email" placeholder="receiver@email.com" onChange={handleChange} required />
+                            <input
+                                name="receiverEmail" type="email" placeholder="receiver@email.com" onChange={handleChange} required
+                            />
                         </div>
                     </div>
 

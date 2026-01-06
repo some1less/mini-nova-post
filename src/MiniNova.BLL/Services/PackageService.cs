@@ -93,38 +93,46 @@ public class PackageService : IPackageService
         };
     }
 
-    public async Task<PackageByIdDTO> CreatePackageAsync(CreatePackageDTO packageDto)
+    public async Task<PackageByIdDTO> CreatePackageAsync(CreatePackageDTO packageDto, int? senderId = null)
     {
-        var sender = await _dbContext.People
-            .FirstOrDefaultAsync(p => p.Email == packageDto.SenderEmail);
-        if (sender == null) throw new KeyNotFoundException($"Sender with email {packageDto.SenderEmail} not found");
-        
+        Person? sender = null;
+
+        if (senderId.HasValue)
+        {
+            sender = await _dbContext.People.FindAsync(senderId.Value);
+        }
+    
+        if (sender == null && !string.IsNullOrEmpty(packageDto.SenderEmail))
+        {
+            sender = await _dbContext.People.FirstOrDefaultAsync(p => p.Email == packageDto.SenderEmail);
+        }
+
+        if (sender == null) 
+            throw new KeyNotFoundException("Sender not found. Please login or provide a valid Sender Email.");
+    
         var receiver = await _dbContext.People
             .FirstOrDefaultAsync(p => p.Email == packageDto.ReceiverEmail);
         if (receiver == null) throw new KeyNotFoundException($"Receiver with email {packageDto.ReceiverEmail} not found");
-        
+    
         var destination = await _dbContext.Destinations
             .FirstOrDefaultAsync(d => d.Id == packageDto.DestinationId);
         if (destination == null)
             throw new KeyNotFoundException($"Destination with id {packageDto.DestinationId} not found");
-        
+    
         var package = new Package()
         {
             SenderId = sender.Id,
             ReceiverId = receiver.Id,
             DestinationId = packageDto.DestinationId,
-
             Description = packageDto.Description,
             Weight = packageDto.Weight,
             Size = packageDto.Size
-
         };
-        
+    
         _dbContext.Packages.Add(package);
         await _dbContext.SaveChangesAsync();
-        
+    
         return await GetPackageByIdAsync(package.Id)!;
-
     }
 
     public async Task UpdatePackageAsync(UpdatePackageDTO packageDto, int packageId)

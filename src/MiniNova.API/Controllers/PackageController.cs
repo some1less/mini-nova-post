@@ -56,7 +56,16 @@ namespace MiniNova.API.Controllers
         {
             try
             {
-                var created = await _packageService.CreatePackageAsync(package);
+                int? currentUserId = null;
+
+                var login = User.FindFirst("name")?.Value;
+                
+                if (!string.IsNullOrEmpty(login))
+                {
+                    currentUserId = await _personService.GetPersonIdByLoginAsync(login);
+                }
+                
+                var created = await _packageService.CreatePackageAsync(package, currentUserId);    
                 return CreatedAtAction(nameof(GetPackage), new { id = created.Id }, created);
             }
             catch (KeyNotFoundException ex)

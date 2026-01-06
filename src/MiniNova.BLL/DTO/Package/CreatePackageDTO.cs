@@ -4,9 +4,9 @@ namespace MiniNova.BLL.DTO.Package;
 
 public class CreatePackageDTO
 {
-    [Required]
+    
     [EmailAddress(ErrorMessage = "Invalid email address.")]
-    public required string SenderEmail { get; set; }
+    public string? SenderEmail { get; set; }
     [Required]
     [EmailAddress(ErrorMessage = "Invalid email address.")]
     public required string ReceiverEmail { get; set; }
