@@ -27,7 +27,7 @@ namespace MiniNova.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Password")
+                    b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -47,25 +47,6 @@ namespace MiniNova.DAL.Migrations
                     b.ToTable("Accounts");
                 });
 
-            modelBuilder.Entity("MiniNova.DAL.Models.Destination", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Street")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Destinations");
-                });
-
             modelBuilder.Entity("MiniNova.DAL.Models.Invoice", b =>
                 {
                     b.Property<int>("Id")
@@ -73,10 +54,8 @@ namespace MiniNova.DAL.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("PackageId")
-                        .HasColumnType("INTEGER");
 
                     b.Property<int>("PayerId")
                         .HasColumnType("INTEGER");
@@ -84,18 +63,48 @@ namespace MiniNova.DAL.Migrations
                     b.Property<DateTime?>("PaymentDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("ShipmentId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PackageId")
-                        .IsUnique();
-
                     b.HasIndex("PayerId");
 
+                    b.HasIndex("ShipmentId")
+                        .IsUnique();
+
                     b.ToTable("Invoices");
+                });
+
+            modelBuilder.Entity("MiniNova.DAL.Models.Location", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Postcode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Locations");
                 });
 
             modelBuilder.Entity("MiniNova.DAL.Models.Occupation", b =>
@@ -105,6 +114,7 @@ namespace MiniNova.DAL.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<decimal>("BaseSalary")
+                        .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -132,6 +142,7 @@ namespace MiniNova.DAL.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<decimal>("Salary")
+                        .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -142,43 +153,6 @@ namespace MiniNova.DAL.Migrations
                         .IsUnique();
 
                     b.ToTable("Operators");
-                });
-
-            modelBuilder.Entity("MiniNova.DAL.Models.Package", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("DestinationId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ReceiverId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("SenderId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Size")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("Weight")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DestinationId");
-
-                    b.HasIndex("ReceiverId");
-
-                    b.HasIndex("SenderId");
-
-                    b.ToTable("Packages");
                 });
 
             modelBuilder.Entity("MiniNova.DAL.Models.Person", b =>
@@ -226,6 +200,93 @@ namespace MiniNova.DAL.Migrations
                     b.ToTable("Roles");
                 });
 
+            modelBuilder.Entity("MiniNova.DAL.Models.Shipment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ConsigneeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DestinationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("OriginId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ShipperId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SizeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TrackId")
+                        .IsRequired()
+                        .HasMaxLength(17)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Weight")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConsigneeId");
+
+                    b.HasIndex("DestinationId");
+
+                    b.HasIndex("OriginId");
+
+                    b.HasIndex("ShipperId");
+
+                    b.HasIndex("SizeId");
+
+                    b.HasIndex("TrackId")
+                        .IsUnique();
+
+                    b.ToTable("Shipments");
+                });
+
+            modelBuilder.Entity("MiniNova.DAL.Models.Size", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Sizes");
+                });
+
+            modelBuilder.Entity("MiniNova.DAL.Models.Status", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Statuses");
+                });
+
             modelBuilder.Entity("MiniNova.DAL.Models.Tracking", b =>
                 {
                     b.Property<int>("Id")
@@ -235,21 +296,24 @@ namespace MiniNova.DAL.Migrations
                     b.Property<int?>("OperatorId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("PackageId")
+                    b.Property<int>("ShipmentId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<int>("StatusId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("UpdateTime")
-                        .HasColumnType("TEXT");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.HasKey("Id");
 
                     b.HasIndex("OperatorId");
 
-                    b.HasIndex("PackageId");
+                    b.HasIndex("ShipmentId");
+
+                    b.HasIndex("StatusId");
 
                     b.ToTable("Trackings");
                 });
@@ -275,21 +339,21 @@ namespace MiniNova.DAL.Migrations
 
             modelBuilder.Entity("MiniNova.DAL.Models.Invoice", b =>
                 {
-                    b.HasOne("MiniNova.DAL.Models.Package", "Package")
-                        .WithOne("Invoice")
-                        .HasForeignKey("MiniNova.DAL.Models.Invoice", "PackageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("MiniNova.DAL.Models.Person", "Payer")
                         .WithMany()
                         .HasForeignKey("PayerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Package");
+                    b.HasOne("MiniNova.DAL.Models.Shipment", "Shipment")
+                        .WithOne("Invoice")
+                        .HasForeignKey("MiniNova.DAL.Models.Invoice", "ShipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Payer");
+
+                    b.Navigation("Shipment");
                 });
 
             modelBuilder.Entity("MiniNova.DAL.Models.Operator", b =>
@@ -311,31 +375,47 @@ namespace MiniNova.DAL.Migrations
                     b.Navigation("Person");
                 });
 
-            modelBuilder.Entity("MiniNova.DAL.Models.Package", b =>
+            modelBuilder.Entity("MiniNova.DAL.Models.Shipment", b =>
                 {
-                    b.HasOne("MiniNova.DAL.Models.Destination", "Destination")
+                    b.HasOne("MiniNova.DAL.Models.Person", "Consignee")
+                        .WithMany("ReceivedPackages")
+                        .HasForeignKey("ConsigneeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MiniNova.DAL.Models.Location", "Destination")
                         .WithMany()
                         .HasForeignKey("DestinationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MiniNova.DAL.Models.Location", "Origin")
+                        .WithMany()
+                        .HasForeignKey("OriginId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MiniNova.DAL.Models.Person", "Shipper")
+                        .WithMany("SentPackages")
+                        .HasForeignKey("ShipperId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MiniNova.DAL.Models.Size", "Size")
+                        .WithMany()
+                        .HasForeignKey("SizeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MiniNova.DAL.Models.Person", "Receiver")
-                        .WithMany("ReceivedPackages")
-                        .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("MiniNova.DAL.Models.Person", "Sender")
-                        .WithMany("SentPackages")
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                    b.Navigation("Consignee");
 
                     b.Navigation("Destination");
 
-                    b.Navigation("Receiver");
+                    b.Navigation("Origin");
 
-                    b.Navigation("Sender");
+                    b.Navigation("Shipper");
+
+                    b.Navigation("Size");
                 });
 
             modelBuilder.Entity("MiniNova.DAL.Models.Tracking", b =>
@@ -344,22 +424,23 @@ namespace MiniNova.DAL.Migrations
                         .WithMany()
                         .HasForeignKey("OperatorId");
 
-                    b.HasOne("MiniNova.DAL.Models.Package", "Package")
+                    b.HasOne("MiniNova.DAL.Models.Shipment", "Shipment")
                         .WithMany("Trackings")
-                        .HasForeignKey("PackageId")
+                        .HasForeignKey("ShipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MiniNova.DAL.Models.Status", "Status")
+                        .WithMany()
+                        .HasForeignKey("StatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Operator");
 
-                    b.Navigation("Package");
-                });
+                    b.Navigation("Shipment");
 
-            modelBuilder.Entity("MiniNova.DAL.Models.Package", b =>
-                {
-                    b.Navigation("Invoice");
-
-                    b.Navigation("Trackings");
+                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("MiniNova.DAL.Models.Person", b =>
@@ -371,6 +452,13 @@ namespace MiniNova.DAL.Migrations
                     b.Navigation("ReceivedPackages");
 
                     b.Navigation("SentPackages");
+                });
+
+            modelBuilder.Entity("MiniNova.DAL.Models.Shipment", b =>
+                {
+                    b.Navigation("Invoice");
+
+                    b.Navigation("Trackings");
                 });
 #pragma warning restore 612, 618
         }

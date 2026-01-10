@@ -12,6 +12,6 @@ public class Person
     public Account? Account { get; set; }
     public Operator? Operator { get; set; }
     
-    public ICollection<Package> ReceivedPackages { get; set; } = new List<Package>();
-    public ICollection<Package> SentPackages { get; set; } = new List<Package>();
+    public ICollection<Shipment> ReceivedPackages { get; set; } = new List<Shipment>();
+    public ICollection<Shipment> SentPackages { get; set; } = new List<Shipment>();
 }

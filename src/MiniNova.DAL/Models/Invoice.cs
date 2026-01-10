@@ -4,8 +4,8 @@ public class Invoice
 {
     public int Id { get; set; }
     
-    public int PackageId { get; set; }
-    public Package Package { get; set; } = null!;
+    public int ShipmentId { get; set; }
+    public Shipment Shipment { get; set; } = null!;
     public int PayerId { get; set; }
     public Person Payer { get; set; } = null!;
     

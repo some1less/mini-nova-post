@@ -12,17 +12,19 @@ namespace MiniNova.DAL.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Destinations",
+                name: "Locations",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    Country = table.Column<string>(type: "TEXT", nullable: false),
                     City = table.Column<string>(type: "TEXT", nullable: false),
-                    Street = table.Column<string>(type: "TEXT", nullable: false)
+                    Address = table.Column<string>(type: "TEXT", nullable: false),
+                    Postcode = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Destinations", x => x.Id);
+                    table.PrimaryKey("PK_Locations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -32,7 +34,7 @@ namespace MiniNova.DAL.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    BaseSalary = table.Column<decimal>(type: "TEXT", nullable: false)
+                    BaseSalary = table.Column<decimal>(type: "TEXT", precision: 18, scale: 2, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -70,12 +72,38 @@ namespace MiniNova.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Sizes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sizes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Statuses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Statuses", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Operators",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Salary = table.Column<decimal>(type: "TEXT", nullable: false),
+                    Salary = table.Column<decimal>(type: "TEXT", precision: 18, scale: 2, nullable: false),
                     HireDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     OccupationId = table.Column<int>(type: "INTEGER", nullable: false),
                     PersonId = table.Column<int>(type: "INTEGER", nullable: false)
@@ -98,49 +126,13 @@ namespace MiniNova.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Packages",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    SenderId = table.Column<int>(type: "INTEGER", nullable: false),
-                    ReceiverId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    Size = table.Column<string>(type: "TEXT", nullable: false),
-                    Weight = table.Column<decimal>(type: "TEXT", nullable: false),
-                    DestinationId = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Packages", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Packages_Destinations_DestinationId",
-                        column: x => x.DestinationId,
-                        principalTable: "Destinations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Packages_People_ReceiverId",
-                        column: x => x.ReceiverId,
-                        principalTable: "People",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Packages_People_SenderId",
-                        column: x => x.SenderId,
-                        principalTable: "People",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Accounts",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Login = table.Column<string>(type: "TEXT", nullable: false),
-                    Password = table.Column<string>(type: "TEXT", nullable: false),
+                    PasswordHash = table.Column<string>(type: "TEXT", nullable: false),
                     RoleId = table.Column<int>(type: "INTEGER", nullable: false),
                     PersonId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
@@ -162,14 +154,65 @@ namespace MiniNova.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Shipments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    TrackId = table.Column<string>(type: "TEXT", maxLength: 17, nullable: false),
+                    ShipperId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ConsigneeId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Description = table.Column<string>(type: "TEXT", nullable: false),
+                    SizeId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Weight = table.Column<decimal>(type: "TEXT", precision: 18, scale: 2, nullable: false),
+                    DestinationId = table.Column<int>(type: "INTEGER", nullable: false),
+                    OriginId = table.Column<int>(type: "INTEGER", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false, defaultValueSql: "GETUTCDATE()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Shipments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Shipments_Locations_DestinationId",
+                        column: x => x.DestinationId,
+                        principalTable: "Locations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Shipments_Locations_OriginId",
+                        column: x => x.OriginId,
+                        principalTable: "Locations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Shipments_People_ConsigneeId",
+                        column: x => x.ConsigneeId,
+                        principalTable: "People",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Shipments_People_ShipperId",
+                        column: x => x.ShipperId,
+                        principalTable: "People",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Shipments_Sizes_SizeId",
+                        column: x => x.SizeId,
+                        principalTable: "Sizes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Invoices",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    PackageId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ShipmentId = table.Column<int>(type: "INTEGER", nullable: false),
                     PayerId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    Amount = table.Column<decimal>(type: "TEXT", precision: 18, scale: 2, nullable: false),
                     Status = table.Column<string>(type: "TEXT", nullable: false),
                     PaymentDate = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
@@ -177,15 +220,15 @@ namespace MiniNova.DAL.Migrations
                 {
                     table.PrimaryKey("PK_Invoices", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Invoices_Packages_PackageId",
-                        column: x => x.PackageId,
-                        principalTable: "Packages",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_Invoices_People_PayerId",
                         column: x => x.PayerId,
                         principalTable: "People",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Invoices_Shipments_ShipmentId",
+                        column: x => x.ShipmentId,
+                        principalTable: "Shipments",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -196,10 +239,10 @@ namespace MiniNova.DAL.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    PackageId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ShipmentId = table.Column<int>(type: "INTEGER", nullable: false),
                     OperatorId = table.Column<int>(type: "INTEGER", nullable: true),
-                    Status = table.Column<string>(type: "TEXT", nullable: false),
-                    UpdateTime = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    StatusId = table.Column<int>(type: "INTEGER", nullable: false),
+                    UpdateTime = table.Column<DateTime>(type: "TEXT", nullable: false, defaultValueSql: "GETUTCDATE()")
                 },
                 constraints: table =>
                 {
@@ -210,9 +253,15 @@ namespace MiniNova.DAL.Migrations
                         principalTable: "Operators",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Trackings_Packages_PackageId",
-                        column: x => x.PackageId,
-                        principalTable: "Packages",
+                        name: "FK_Trackings_Shipments_ShipmentId",
+                        column: x => x.ShipmentId,
+                        principalTable: "Shipments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Trackings_Statuses_StatusId",
+                        column: x => x.StatusId,
+                        principalTable: "Statuses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -229,15 +278,15 @@ namespace MiniNova.DAL.Migrations
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Invoices_PackageId",
-                table: "Invoices",
-                column: "PackageId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Invoices_PayerId",
                 table: "Invoices",
                 column: "PayerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invoices_ShipmentId",
+                table: "Invoices",
+                column: "ShipmentId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Operators_OccupationId",
@@ -251,19 +300,35 @@ namespace MiniNova.DAL.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Packages_DestinationId",
-                table: "Packages",
+                name: "IX_Shipments_ConsigneeId",
+                table: "Shipments",
+                column: "ConsigneeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Shipments_DestinationId",
+                table: "Shipments",
                 column: "DestinationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Packages_ReceiverId",
-                table: "Packages",
-                column: "ReceiverId");
+                name: "IX_Shipments_OriginId",
+                table: "Shipments",
+                column: "OriginId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Packages_SenderId",
-                table: "Packages",
-                column: "SenderId");
+                name: "IX_Shipments_ShipperId",
+                table: "Shipments",
+                column: "ShipperId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Shipments_SizeId",
+                table: "Shipments",
+                column: "SizeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Shipments_TrackId",
+                table: "Shipments",
+                column: "TrackId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Trackings_OperatorId",
@@ -271,9 +336,14 @@ namespace MiniNova.DAL.Migrations
                 column: "OperatorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Trackings_PackageId",
+                name: "IX_Trackings_ShipmentId",
                 table: "Trackings",
-                column: "PackageId");
+                column: "ShipmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Trackings_StatusId",
+                table: "Trackings",
+                column: "StatusId");
         }
 
         /// <inheritdoc />
@@ -295,16 +365,22 @@ namespace MiniNova.DAL.Migrations
                 name: "Operators");
 
             migrationBuilder.DropTable(
-                name: "Packages");
+                name: "Shipments");
+
+            migrationBuilder.DropTable(
+                name: "Statuses");
 
             migrationBuilder.DropTable(
                 name: "Occupations");
 
             migrationBuilder.DropTable(
-                name: "Destinations");
+                name: "Locations");
 
             migrationBuilder.DropTable(
                 name: "People");
+
+            migrationBuilder.DropTable(
+                name: "Sizes");
         }
     }
 }
