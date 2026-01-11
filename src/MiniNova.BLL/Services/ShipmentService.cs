@@ -9,54 +9,53 @@ using MiniNova.DAL.Models;
 
 namespace MiniNova.BLL.Services;
 
-public class PackageService : IPackageService
+public class ShipmentService : IShipmentService
 {
     
     private readonly NovaDbContext _dbContext;
 
-    public PackageService(NovaDbContext dbContext)
+    public ShipmentService(NovaDbContext dbContext)
     {
         _dbContext = dbContext;
     }
     
-    public async Task<PagedResponse<PackageAllDTO>> GetAllAsync(int page, int pageSize)
+    public async Task<PagedResponse<ShipmentAllDTO>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize = 10)
     {
         var query = _dbContext.Shipments.AsQueryable();
 
-        var totalCount = await query.CountAsync();
+        var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
             .OrderByDescending(p => p.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(p => new PackageAllDTO 
+            .Select(p => new ShipmentAllDTO 
             { 
                 Id = p.Id,
                 Description = p.Description,
-                Sender = new PersonAllPackagesDTO()
+                Sender = new PersonAllShipmentsDTO()
                 {
                     FullName = $"{p.Shipper.FirstName} {p.Shipper.LastName}",
                     Email = $"{p.Shipper.Email}",
                     Phone = $"{p.Shipper.Phone}",
                 },
-                Receiver = new PersonAllPackagesDTO()
+                Receiver = new PersonAllShipmentsDTO()
                 {
                     FullName = $"{p.Consignee.FirstName} {p.Consignee.LastName}",
                     Email = $"{p.Consignee.Email}",
                     Phone = $"{p.Consignee.Phone}",
                 },
-                DestinationAddress = p.Destination != null 
-                    ? $"{p.Destination.Address}, {p.Destination.City}" 
-                    : "Unknown",
+                DestinationAddress = $"{p.Destination.Address} [{p.Destination.Postcode}], {p.Destination.City}, {p.Destination.Country}",
+                OriginAddress = $"{p.Origin.Address} [{p.Origin.Postcode}], {p.Origin.City}, {p.Origin.Country}",
                 Status = p.Trackings
                     .OrderByDescending(t => t.UpdateTime)
                     .Select(t => t.Status.Name)
-                    .FirstOrDefault() ?? "Registered",
+                    .FirstOrDefault() ?? "null",
                 
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
-        return new PagedResponse<PackageAllDTO>
+        return new PagedResponse<ShipmentAllDTO>
         {
             Items = items,
             Page = page,
@@ -65,7 +64,7 @@ public class PackageService : IPackageService
         };
     }
 
-    public async Task<PackageByIdDTO> GetPackageByIdAsync(int packageId)
+    public async Task<ShipmentByIdDTO> GetShipmentByIdAsync(int packageId, CancellationToken cancellationToken)
     {
         var package = await _dbContext.Shipments
             .Include(d => d.Destination)
@@ -77,7 +76,7 @@ public class PackageService : IPackageService
             .Include(p => p.Size)
             .Include(p => p.Trackings).ThenInclude(t => t.Status)
             .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == packageId);
+            .FirstOrDefaultAsync(p => p.Id == packageId,  cancellationToken);
 
         if (package == null) throw new KeyNotFoundException($"Package with id {packageId} not found");
         
@@ -86,9 +85,9 @@ public class PackageService : IPackageService
         var lastStatus = package.Trackings
             .OrderByDescending(t => t.UpdateTime)
             .Select(t => t.Status.Name)
-            .FirstOrDefault() ??  "Unknown";
+            .FirstOrDefault() ?? "null";
         
-        return new PackageByIdDTO()
+        return new ShipmentByIdDTO()
         {
             Id = package.Id,
             Shipper = new PersonResponseDTO()
@@ -125,29 +124,29 @@ public class PackageService : IPackageService
         };
     }
 
-    public async Task<PackageByIdDTO> CreatePackageAsync(CreatePackageDTO packageDto, int? senderId = null)
+    public async Task<ShipmentByIdDTO> CreateShipmentAsync(CreateShipmentDTO packageDto, CancellationToken cancellationToken, int? senderId = null)
     {
         Person? sender = null;
 
         if (senderId.HasValue)
         {
-            sender = await _dbContext.People.FindAsync(senderId.Value);
+            sender = await _dbContext.People.FindAsync([senderId.Value], cancellationToken);
         }
     
         if (sender == null && !string.IsNullOrEmpty(packageDto.ShipperEmail))
         {
-            sender = await _dbContext.People.FirstOrDefaultAsync(p => p.Email == packageDto.ShipperEmail);
+            sender = await _dbContext.People.FirstOrDefaultAsync(p => p.Email == packageDto.ShipperEmail, cancellationToken);
         }
 
         if (sender == null) 
             throw new KeyNotFoundException("Sender not found. Please login or provide a valid Sender Email.");
     
         var receiver = await _dbContext.People
-            .FirstOrDefaultAsync(p => p.Email == packageDto.ConsigneeEmail);
+            .FirstOrDefaultAsync(p => p.Email == packageDto.ConsigneeEmail,  cancellationToken);
         if (receiver == null) throw new KeyNotFoundException($"Receiver with email {packageDto.ConsigneeEmail} not found");
     
         var destination = await _dbContext.Locations
-            .FirstOrDefaultAsync(d => d.Id == packageDto.DestinationId);
+            .FirstOrDefaultAsync(d => d.Id == packageDto.DestinationId,  cancellationToken);
         if (destination == null)
             throw new KeyNotFoundException($"Destination with id {packageDto.DestinationId} not found");
     
@@ -169,21 +168,31 @@ public class PackageService : IPackageService
         };
     
         _dbContext.Shipments.Add(package);
-        await _dbContext.SaveChangesAsync();
+        
+        var initialTracking = new Tracking()
+        {
+            Shipment = package,
+            StatusId = 1,
+            UpdateTime = DateTime.UtcNow,
+            OperatorId = 1
+        };
+        _dbContext.Trackings.Add(initialTracking);
+        
+        await _dbContext.SaveChangesAsync(cancellationToken);
     
-        return await GetPackageByIdAsync(package.Id)!;
+        return await GetShipmentByIdAsync(package.Id, cancellationToken);
     }
 
-    public async Task UpdatePackageAsync(UpdatePackageDTO packageDto, int packageId)
+    public async Task UpdateShipmentAsync(UpdateShipmentDTO packageDto, int packageId, CancellationToken cancellationToken)
     {
         
         var package = await _dbContext.Shipments
-            .FirstOrDefaultAsync(p => p.Id == packageId);
+            .FirstOrDefaultAsync(p => p.Id == packageId, cancellationToken);
         if (package == null) 
             throw new KeyNotFoundException($"Package with id {packageId} not found");
 
         var destination = await _dbContext.Locations
-            .FirstOrDefaultAsync(d => d.Id == packageDto.DestinationId);
+            .FirstOrDefaultAsync(d => d.Id == packageDto.DestinationId, cancellationToken);
         if (destination == null)
             throw new KeyNotFoundException($"Destination with id {packageDto.DestinationId} not found");
         
@@ -192,21 +201,21 @@ public class PackageService : IPackageService
         package.Weight = packageDto.Weight;
         package.DestinationId = packageDto.DestinationId;
         
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task DeletePackageAsync(int packageId)
+    public async Task DeleteShipmentAsync(int packageId, CancellationToken cancellationToken)
     {
         var  package = await _dbContext.Shipments
-            .FirstOrDefaultAsync(p => p.Id == packageId);
+            .FirstOrDefaultAsync(p => p.Id == packageId, cancellationToken);
         if (package == null)
             throw new KeyNotFoundException($"Package with id {packageId} not found");
         
         _dbContext.Shipments.Remove(package);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<PagedResponse<PackageByIdDTO>> GetUserPackagesAsync(int userId, int page, int pageSize)
+    public async Task<PagedResponse<ShipmentByIdDTO>> GetUserShipmentsAsync(int userId, CancellationToken cancellationToken,  int page, int pageSize)
     {
         var query = _dbContext.Shipments
             .Include(p => p.Shipper)
@@ -216,13 +225,13 @@ public class PackageService : IPackageService
             .Include(p => p.Trackings)
             .Where(p => p.ShipperId == userId || p.ConsigneeId == userId);
 
-        var totalCount = await query.CountAsync();
+        var totalCount = await query.CountAsync(cancellationToken);
 
         var packages = await query
             .OrderByDescending(p => p.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var packageDtos = packages.Select(p =>
         {
@@ -232,7 +241,7 @@ public class PackageService : IPackageService
                 .FirstOrDefault() ??  "Unknown";
 
 
-            return new PackageByIdDTO
+            return new ShipmentByIdDTO
             {
                 Id = p.Id,
                 Description = p.Description,
@@ -262,7 +271,7 @@ public class PackageService : IPackageService
         });
         
         
-        return new PagedResponse<PackageByIdDTO>
+        return new PagedResponse<ShipmentByIdDTO>
         {
             Items = packageDtos,
             TotalCount = totalCount,

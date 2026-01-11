@@ -97,18 +97,58 @@
                                                                                  (4, 18500, '2023-06-01 09:00:00', 4, 12),
                                                                                  (5, 21000, '2023-07-15 14:00:00', 5, 13);
 
-        -- ==========================================================
--- 3. SHIPMENTS & INVOICES
+-- ==========================================================
+-- 3. SHIPMENTS & INVOICES 
 -- ==========================================================
 
 -- 1. Completed shipment (UA -> PL)
         INSERT INTO Shipments (Id, TrackId, ShipperId, ConsigneeId, Description, SizeId, Weight, OriginId, DestinationId, CreatedAt) VALUES
-            (1, 'UA 3150 4921 555 3', 1, 8, 'Starlink Terminal', 3, 15.0, 1, 7, '2023-11-01 08:30:00');
-        INSERT INTO Invoices (Id, ShipmentId, PayerId, Amount, Status, PaymentDate) VALUES
-            (1, 1, 1, 500.00, 'Paid', '2023-11-01 08:35:00');
+                                                                                                                                         (1, 'UA 3150 4921 555 3', 1, 8, 'Starlink Terminal', 3, 15.0, 1, 7, '2023-11-01 08:30:00'),
+                                                                                                                                         (3, 'UA 1002 7741 229 1', 11, 12, 'Tactical Medical Kit', 2, 2.5, 11, 12, '2023-11-05 10:00:00'),
+                                                                                                                                         (4, 'PL 2005 1109 443 8', 8, 4, 'Signed Football Jersey', 2, 0.8, 7, 3, '2023-11-06 14:20:00');
 
--- 2. In Transit (GB -> IT)
-        INSERT INTO Shipments (Id, TrackId, ShipperId, ConsigneeId, Description, SizeId, Weight, OriginId, DestinationId, CreatedAt) VALUES
-            (2, 'GB 1005 8812 333 7', 2, 7, 'Peaky Blinders Script', 1, 0.5, 2, 5, '2023-11-02 09:45:00');
         INSERT INTO Invoices (Id, ShipmentId, PayerId, Amount, Status, PaymentDate) VALUES
-            (2, 2, 2, 45.00, 'Paid', '2023-11-02 09:50:00');
+                                                                                        (1, 1, 1, 500.00, 'Paid', '2023-11-01 08:35:00'),
+                                                                                        (3, 3, 11, 120.00, 'Paid', '2023-11-05 10:15:00'),
+                                                                                        (4, 4, 8, 85.50, 'Paid', '2023-11-06 14:45:00');
+
+-- 2. In Transit / Submitted (GB, DE, IT, FR)
+        INSERT INTO Shipments (Id, TrackId, ShipperId, ConsigneeId, Description, SizeId, Weight, OriginId, DestinationId, CreatedAt) VALUES
+                                                                                                                                         (2, 'GB 1005 8812 333 7', 2, 7, 'Peaky Blinders Script', 1, 0.5, 2, 5, '2023-11-02 09:45:00'),
+                                                                                                                                         (5, 'DE 4100 9928 112 4', 5, 9, 'Tesla Spare Parts', 4, 45.0, 4, 8, '2023-11-10 11:00:00'),
+                                                                                                                                         (6, 'FR 2020 5561 889 2', 4, 10, 'Vintage Wine Set', 2, 5.0, 3, 6, '2023-11-12 16:30:00'),
+                                                                                                                                         (7, 'IT 1010 3342 771 0', 7, 13, 'Leather Jacket', 2, 1.2, 5, 1, '2023-11-15 09:00:00');
+
+        INSERT INTO Invoices (Id, ShipmentId, PayerId, Amount, Status, PaymentDate) VALUES
+                                                                                        (2, 2, 2, 45.00, 'Paid', '2023-11-02 09:50:00'),
+                                                                                        (5, 5, 5, 1200.00, 'Pending', NULL), -- Ще не оплачено
+                                                                                        (6, 6, 4, 210.00, 'Paid', '2023-11-12 16:40:00'),
+                                                                                        (7, 7, 7, 95.00, 'Paid', '2023-11-15 09:10:00');
+
+-- 3. New / Registered (Recent)
+        INSERT INTO Shipments (Id, TrackId, ShipperId, ConsigneeId, Description, SizeId, Weight, OriginId, DestinationId, CreatedAt) VALUES
+                                                                                                                                         (8, 'NL 1001 4455 667 9', 14, 15, 'Spider-Man Suit Props', 1, 2.0, 14, 2, '2023-11-20 13:00:00'),
+                                                                                                                                         (9, 'PL 3110 8822 114 5', 12, 11, 'Action Camera Gear', 3, 3.5, 12, 11, '2023-11-21 10:15:00');
+
+        INSERT INTO Invoices (Id, ShipmentId, PayerId, Amount, Status, PaymentDate) VALUES
+                                                                                        (8, 8, 14, 60.00, 'Pending', NULL),
+                                                                                        (9, 9, 12, 150.00, 'Paid', '2023-11-21 10:30:00');
+
+        -- === TRACKINGS ===
+
+        INSERT INTO Trackings (ShipmentId, StatusId, UpdateTime, OperatorId) VALUES
+                                                                                 (1, 1, '2023-11-01 08:30:00', 1), -- Registered
+                                                                                 (1, 2, '2023-11-01 10:00:00', 2), -- Submitted
+                                                                                 (1, 3, '2023-11-02 12:00:00', 3), -- In Transit
+                                                                                 (1, 4, '2023-11-04 15:30:00', 3); -- Delivered
+
+        INSERT INTO Trackings (ShipmentId, StatusId, UpdateTime, OperatorId) VALUES
+                                                                                 (2, 1, '2023-11-02 09:45:00', 1), -- Registered
+                                                                                 (2, 2, '2023-11-02 11:00:00', 2), -- Submitted
+                                                                                 (2, 3, '2023-11-03 08:00:00', 3); -- In Transit
+
+        INSERT INTO Trackings (ShipmentId, StatusId, UpdateTime, OperatorId) VALUES
+                                                                                 (5, 1, '2023-11-10 11:00:00', 1),
+                                                                                 (5, 2, '2023-11-10 13:00:00', 2);
+        
+        COMMIT;

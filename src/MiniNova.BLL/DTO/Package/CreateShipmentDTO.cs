@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MiniNova.BLL.DTO.Package;
 
-public class CreatePackageDTO
+public class CreateShipmentDTO
 {
     
     [EmailAddress(ErrorMessage = "Invalid email address.")]

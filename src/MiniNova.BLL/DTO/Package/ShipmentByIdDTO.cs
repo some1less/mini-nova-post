@@ -3,7 +3,7 @@ using MiniNova.BLL.DTO.Tracking;
 
 namespace MiniNova.BLL.DTO.Package;
 
-public class PackageByIdDTO
+public class ShipmentByIdDTO
 {
     public int Id { get; set; }
     public required PersonResponseDTO Shipper { get; set; }

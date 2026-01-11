@@ -48,7 +48,7 @@ builder.Services.AddControllers()
 
 builder.Services.AddScoped<IPersonService, PersonService>();
 builder.Services.AddScoped<IOperatorService, OperatorService>();
-// builder.Services.AddScoped<IPackageService, PackageService>();
+builder.Services.AddScoped<IShipmentService, ShipmentService>();
 // builder.Services.AddScoped<ITrackingService, TrackingService>();
 
 // ----- SECURITY SERVICES ------

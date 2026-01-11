@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MiniNova.BLL.DTO.Package;
 
-public class UpdatePackageDTO
+public class UpdateShipmentDTO
 {
     [Required]
     [MinLength(5, ErrorMessage = "Description has to be longer than 5 characters.")]

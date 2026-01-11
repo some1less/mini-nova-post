@@ -1,6 +1,6 @@
 namespace MiniNova.BLL.DTO.People;
 
-public class PersonAllPackagesDTO
+public class PersonAllShipmentsDTO
 {
     public required string FullName { get; set; }
     public required string Email { get; set; }
