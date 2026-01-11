@@ -10,10 +10,11 @@ This repository provides an overview of the **Mini Nova Post** ecosystem — a s
 
 The project utilizes a modern, robust stack to ensure high performance and maintainability:
 
-* **Backend**: .NET 8 (C#) following Clean Architecture.
+* **Backend**: .NET 8 (C#) following Layered Architecture.
 * **Frontend**: React (SPA) for a seamless user interface.
-* **Database**: SQLite for local development; architected for PostgreSQL in production.
+* **Database**: PostgreSQL (Containerized).
 * **ORM**: Entity Framework Core with Repository/Service patterns.
+* **Containerization**: Docker & Docker Compose.
 
 # Features
 
@@ -22,39 +23,41 @@ The ecosystem is designed with a focus on two core user experiences:
 * **Client Experience**: Access to a personal cabinet with digital parcel history, real-time tracking, and simplified shipment creation.
 * **Operator Experience**: Advanced tools for shipment processing, secure data handling, and lifecycle management of every parcel in the network.
 
-# How to install and built
+# How to Install and Build
 
-This section describes the standard process for setting up the local development environment. Before proceeding, ensure that **.NET 8 SDK** and **Node.js (LTS)** are installed on your system.
+This section describes the process for setting up the local development environment using **Docker**. This ensures that the Database, API, and all dependencies are configured automatically.
 
-### Build Process
+### Prerequisites
+* **Docker Desktop** installed and running.
+* (Optional) .NET 8 SDK and Node.js if you plan to run services without Docker.
+
+### Quick Start with Docker
 
 1. **Clone the repository** to your local machine.
-2. **Environment Configuration:** Create an `appsettings.json` file in the `src/MiniNova.API` directory. Use the template below to ensure the JWT Authentication and Database connection are properly configured:
-```json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "AllowedHosts": "*",
-  "ConnectionStrings": {
-    "MNPConnection": "Data Source=nova.db"
-  },
-  "Jwt": {
-    "Issuer": "http://localhost:server_port",
-    "Audience": "http://localhost:client_port",
-    "Key": "put_your_long_key_here(min 64 characters)",
-    "ValidInMinutes": 60
-  }
-}
-```
-3. **Database Initialization:** The project follows a **Code-First** approach using **EF Core** and **SQLite**. **SQLite** is a lightweight, file-based database engine that requires no external server installation.
-   
-   * Run `dotnet ef database update` within the API project folder to apply migrations and generate the `nova.db` file.
-   * **Sample Data**: While the application includes built-in **Data Seeding** in `Program.cs` for initial setup, a dedicated `scripts/` directory next to `src/` is provided. Inside, you will find `insert.sql`, which can be used to manually populate or reset the database with sample users, operators, and parcel records.
 
-4. **Running the Application:**
-   * **Backend**: Execute `dotnet run` inside the `src/MiniNova.API` folder.
-   * **Frontend**: Navigate to `src/client`, run `npm install`, and then `npm run dev`.
+2. **Environment Configuration:**
+   Create a `.env` file in the root directory of the project (next to `docker-compose.yaml`). Copy the following template and fill in your secure keys:
+
+```properties
+# Database Configuration
+POSTGRES_DB=XXXX
+POSTGRES_USER=XXXX
+POSTGRES_PASSWORD=XXXX
+
+# JWT Configuration
+JWT_KEY=YourSuperSecretKeyMustBeAtLeast64CharactersLong12345
+JWT_ISSUER=http://localhost:XXXX
+JWT_AUDIENCE=http://localhost:XXXX
+JWT_VALID_MINUTES=60
+```
+
+3. **Run the Application:** Open your terminal in the project root and execute:
+```Bash
+
+docker-compose up --build
+```
+
+4. Access the Application:
+
+* **API / Swagger:** `http://localhost:5050/swagger`
+* **Frontend:** `http://localhost:5173`
