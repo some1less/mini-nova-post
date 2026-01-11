@@ -21,35 +21,16 @@ namespace MiniNova.API.Controllers
         public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var result = await _authService.LoginAsync(request, cancellationToken);
-                return Ok(result);
-            }
-            catch (UnauthorizedAccessException ex) 
-            {
-                return Unauthorized(new { error = ex.Message });
-            }
+            var result = await _authService.LoginAsync(request, cancellationToken);
+            return Ok(result);
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                await _authService.RegisterAsync(request, cancellationToken);
-                return Ok(new { message = "Registration Successful" });
-            }
-            catch (ValidationException ex)
-            {
-                ModelState.AddModelError(ex.FieldName, ex.Message);
-                return ValidationProblem(ModelState);
-            } 
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            await _authService.RegisterAsync(request, cancellationToken);
+            return Ok(new { message = "Registration Successful" });
         }
     }
 }

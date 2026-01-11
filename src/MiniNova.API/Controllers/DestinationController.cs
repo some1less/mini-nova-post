@@ -18,8 +18,8 @@ public class DestinationController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetDestinations()
     {
-        var list = await _context.Destinations
-            .Select(d => new { d.Id, Address = $"{d.City}, {d.Street}" })
+        var list = await _context.Locations
+            .Select(d => new { d.Id, Address = $"{d.Country}, {d.City}, {d.Address}, {d.Postcode}" })
             .ToListAsync();
         
         return Ok(list);

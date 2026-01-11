@@ -21,7 +21,7 @@ public class PackageService : IPackageService
     
     public async Task<PagedResponse<PackageAllDTO>> GetAllAsync(int page, int pageSize)
     {
-        var query = _dbContext.Packages.AsQueryable();
+        var query = _dbContext.Shipments.AsQueryable();
 
         var totalCount = await query.CountAsync();
 
@@ -35,22 +35,22 @@ public class PackageService : IPackageService
                 Description = p.Description,
                 Sender = new PersonAllPackagesDTO()
                 {
-                    FullName = $"{p.Sender.FirstName} {p.Sender.LastName}",
-                    Email = $"{p.Sender.Email}",
-                    Phone = $"{p.Sender.Phone}",
+                    FullName = $"{p.Shipper.FirstName} {p.Shipper.LastName}",
+                    Email = $"{p.Shipper.Email}",
+                    Phone = $"{p.Shipper.Phone}",
                 },
                 Receiver = new PersonAllPackagesDTO()
                 {
-                    FullName = $"{p.Receiver.FirstName} {p.Receiver.LastName}",
-                    Email = $"{p.Receiver.Email}",
-                    Phone = $"{p.Receiver.Phone}",
+                    FullName = $"{p.Consignee.FirstName} {p.Consignee.LastName}",
+                    Email = $"{p.Consignee.Email}",
+                    Phone = $"{p.Consignee.Phone}",
                 },
                 DestinationAddress = p.Destination != null 
-                    ? $"{p.Destination.Street}, {p.Destination.City}" 
+                    ? $"{p.Destination.Address}, {p.Destination.City}" 
                     : "Unknown",
                 Status = p.Trackings
                     .OrderByDescending(t => t.UpdateTime)
-                    .Select(t => t.Status)
+                    .Select(t => t.Status.Name)
                     .FirstOrDefault() ?? "Registered",
                 
             })
@@ -65,53 +65,57 @@ public class PackageService : IPackageService
         };
     }
 
-    public async Task<PackageByIdDTO?> GetPackageByIdAsync(int packageId)
+    public async Task<PackageByIdDTO> GetPackageByIdAsync(int packageId)
     {
-        var package = await _dbContext.Packages
+        var package = await _dbContext.Shipments
             .Include(d => d.Destination)
-            .Include(s => s.Sender)
-            .Include(r => r.Receiver)
+            .Include(d => d.Origin)
+            .Include(s => s.Shipper)
+            .Include(r => r.Consignee)
             .Include(p => p.Trackings).ThenInclude(t => t.Operator).ThenInclude(o => o.Person)
             .Include(p => p.Trackings).ThenInclude(t => t.Operator).ThenInclude(o => o.Occupation)
+            .Include(p => p.Size)
+            .Include(p => p.Trackings).ThenInclude(t => t.Status)
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == packageId);
 
-        if (package == null) return null;
+        if (package == null) throw new KeyNotFoundException($"Package with id {packageId} not found");
         
         var sortedHistory = package.Trackings.OrderByDescending(t => t.UpdateTime).ToList();
-        
+
         var lastStatus = package.Trackings
             .OrderByDescending(t => t.UpdateTime)
-            .FirstOrDefault()?.Status ?? "Registered";
+            .Select(t => t.Status.Name)
+            .FirstOrDefault() ??  "Unknown";
         
         return new PackageByIdDTO()
         {
             Id = package.Id,
-            Sender = new PersonResponseDTO()
+            Shipper = new PersonResponseDTO()
             {
-                Id = package.Sender.Id,
-                FullName = $"{package.Sender.FirstName} {package.Sender.LastName}",
-                Email = package.Sender.Email,
-                Phone = package.Sender.Phone,
+                Id = package.Shipper.Id,
+                FullName = $"{package.Shipper.FirstName} {package.Shipper.LastName}",
+                Email = package.Shipper.Email,
+                Phone = package.Shipper.Phone,
             },
-            Receiver = new PersonResponseDTO()
+            Consignee = new PersonResponseDTO()
             {
-                Id = package.Receiver.Id,
-                FullName = $"{package.Receiver.FirstName} {package.Receiver.LastName}",
-                Email = package.Receiver.Email,
-                Phone = package.Receiver.Phone,
+                Id = package.Consignee.Id,
+                FullName = $"{package.Consignee.FirstName} {package.Consignee.LastName}",
+                Email = package.Consignee.Email,
+                Phone = package.Consignee.Phone,
             },
             Description = package.Description,
-            Size = package.Size,
+            Size = package.Size.Name,
             Weight = package.Weight,
 
-            DestinationAddress = $"{package.Destination.Street}, {package.Destination.City}",
+            DestinationAddress = $"{package.Destination.Address}, {package.Destination.City}",
             
             Status = lastStatus,
             History = sortedHistory.Select(t => new TrackingResponseDTO
             {
                 Id = t.Id,
-                Status = t.Status,
+                Status = t.Status.Name,
                 UpdateTime = t.UpdateTime.ToString("yyyy-MM-dd HH:mm"),
                 OperatorName = t.Operator != null 
                     ? $"{t.Operator.Person.FirstName} {t.Operator.Person.LastName}" 
@@ -130,19 +134,19 @@ public class PackageService : IPackageService
             sender = await _dbContext.People.FindAsync(senderId.Value);
         }
     
-        if (sender == null && !string.IsNullOrEmpty(packageDto.SenderEmail))
+        if (sender == null && !string.IsNullOrEmpty(packageDto.ShipperEmail))
         {
-            sender = await _dbContext.People.FirstOrDefaultAsync(p => p.Email == packageDto.SenderEmail);
+            sender = await _dbContext.People.FirstOrDefaultAsync(p => p.Email == packageDto.ShipperEmail);
         }
 
         if (sender == null) 
             throw new KeyNotFoundException("Sender not found. Please login or provide a valid Sender Email.");
     
         var receiver = await _dbContext.People
-            .FirstOrDefaultAsync(p => p.Email == packageDto.ReceiverEmail);
-        if (receiver == null) throw new KeyNotFoundException($"Receiver with email {packageDto.ReceiverEmail} not found");
+            .FirstOrDefaultAsync(p => p.Email == packageDto.ConsigneeEmail);
+        if (receiver == null) throw new KeyNotFoundException($"Receiver with email {packageDto.ConsigneeEmail} not found");
     
-        var destination = await _dbContext.Destinations
+        var destination = await _dbContext.Locations
             .FirstOrDefaultAsync(d => d.Id == packageDto.DestinationId);
         if (destination == null)
             throw new KeyNotFoundException($"Destination with id {packageDto.DestinationId} not found");
@@ -152,17 +156,19 @@ public class PackageService : IPackageService
             throw new ArgumentException("You cannot send a package to yourself via our service.");
         }
         
-        var package = new Package()
+        var package = new Shipment()
         {
-            SenderId = sender.Id,
-            ReceiverId = receiver.Id,
+            TrackId = "temp",
+            ShipperId = sender.Id,
+            ConsigneeId = receiver.Id,
             DestinationId = packageDto.DestinationId,
+            OriginId =  packageDto.OriginId,
             Description = packageDto.Description,
             Weight = packageDto.Weight,
-            Size = packageDto.Size
+            SizeId = packageDto.SizeId,
         };
     
-        _dbContext.Packages.Add(package);
+        _dbContext.Shipments.Add(package);
         await _dbContext.SaveChangesAsync();
     
         return await GetPackageByIdAsync(package.Id)!;
@@ -171,18 +177,18 @@ public class PackageService : IPackageService
     public async Task UpdatePackageAsync(UpdatePackageDTO packageDto, int packageId)
     {
         
-        var package = await _dbContext.Packages
+        var package = await _dbContext.Shipments
             .FirstOrDefaultAsync(p => p.Id == packageId);
         if (package == null) 
             throw new KeyNotFoundException($"Package with id {packageId} not found");
 
-        var destination = await _dbContext.Destinations
+        var destination = await _dbContext.Locations
             .FirstOrDefaultAsync(d => d.Id == packageDto.DestinationId);
         if (destination == null)
             throw new KeyNotFoundException($"Destination with id {packageDto.DestinationId} not found");
         
         package.Description = packageDto.Description;
-        package.Size = packageDto.Size;
+        package.SizeId = packageDto.SizeId;
         package.Weight = packageDto.Weight;
         package.DestinationId = packageDto.DestinationId;
         
@@ -191,23 +197,24 @@ public class PackageService : IPackageService
 
     public async Task DeletePackageAsync(int packageId)
     {
-        var  package = await _dbContext.Packages
+        var  package = await _dbContext.Shipments
             .FirstOrDefaultAsync(p => p.Id == packageId);
         if (package == null)
             throw new KeyNotFoundException($"Package with id {packageId} not found");
         
-        _dbContext.Packages.Remove(package);
+        _dbContext.Shipments.Remove(package);
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task<PagedResponse<PackageByIdDTO>> GetUserPackagesAsync(int userId, int page, int pageSize)
     {
-        var query = _dbContext.Packages
-            .Include(p => p.Sender)
-            .Include(p => p.Receiver)     
+        var query = _dbContext.Shipments
+            .Include(p => p.Shipper)
+            .Include(p => p.Consignee)     
             .Include(p => p.Destination)
+            .Include(p => p.Size)
             .Include(p => p.Trackings)
-            .Where(p => p.SenderId == userId || p.ReceiverId == userId);
+            .Where(p => p.ShipperId == userId || p.ConsigneeId == userId);
 
         var totalCount = await query.CountAsync();
 
@@ -221,32 +228,33 @@ public class PackageService : IPackageService
         {
             var lastStatus = p.Trackings
                 .OrderByDescending(t => t.UpdateTime)
-                .FirstOrDefault()?.Status ?? "Registered";
+                .Select(t => t.Status.Name)
+                .FirstOrDefault() ??  "Unknown";
 
 
             return new PackageByIdDTO
             {
                 Id = p.Id,
                 Description = p.Description,
-                Size = p.Size,
+                Size = p.Size.Name,
                 Weight = p.Weight,
 
-                DestinationAddress = $"{p.Destination.Street}, {p.Destination.City}",
+                DestinationAddress = $"{p.Destination.Address}, {p.Destination.City}",
 
-                Sender = new PersonResponseDTO
+                Shipper = new PersonResponseDTO
                 {
-                    Id = p.Sender.Id,
-                    FullName = $"{p.Sender.FirstName} {p.Sender.LastName}",
-                    Email = p.Sender.Email,
-                    Phone = p.Sender.Phone
+                    Id = p.Shipper.Id,
+                    FullName = $"{p.Shipper.FirstName} {p.Shipper.LastName}",
+                    Email = p.Shipper.Email,
+                    Phone = p.Shipper.Phone
                 },
 
-                Receiver = new PersonResponseDTO
+                Consignee = new PersonResponseDTO
                 {
-                    Id = p.Receiver.Id,
-                    FullName = $"{p.Receiver.FirstName} {p.Receiver.LastName}",
-                    Email = p.Receiver.Email,
-                    Phone = p.Receiver.Phone
+                    Id = p.Consignee.Id,
+                    FullName = $"{p.Consignee.FirstName} {p.Consignee.LastName}",
+                    Email = p.Consignee.Email,
+                    Phone = p.Consignee.Phone
                 },
                 
                 Status = lastStatus

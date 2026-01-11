@@ -6,8 +6,8 @@ namespace MiniNova.BLL.DTO.Package;
 public class PackageByIdDTO
 {
     public int Id { get; set; }
-    public required PersonResponseDTO Sender { get; set; }
-    public required PersonResponseDTO Receiver { get; set; }
+    public required PersonResponseDTO Shipper { get; set; }
+    public required PersonResponseDTO Consignee { get; set; }
     
     public required string Description { get; set; }
     public required string Size { get; set; }

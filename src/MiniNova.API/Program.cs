@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using MiniNova.API.Middleware;
 using MiniNova.BLL.Helpers.Options;
 using MiniNova.BLL.Interfaces;
 using MiniNova.BLL.Security.Auth;
@@ -11,9 +12,17 @@ using MiniNova.BLL.Security.Tokens;
 using MiniNova.BLL.Services;
 using MiniNova.DAL.Context;
 using MiniNova.DAL.Models;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ----- SERILOG ------
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // ----- CONFIG ------
 var connectionString = builder.Configuration.GetConnectionString("MNPConnection")
@@ -39,8 +48,8 @@ builder.Services.AddControllers()
 
 builder.Services.AddScoped<IPersonService, PersonService>();
 builder.Services.AddScoped<IOperatorService, OperatorService>();
-builder.Services.AddScoped<IPackageService, PackageService>();
-builder.Services.AddScoped<ITrackingService, TrackingService>();
+// builder.Services.AddScoped<IPackageService, PackageService>();
+// builder.Services.AddScoped<ITrackingService, TrackingService>();
 
 // ----- SECURITY SERVICES ------
 builder.Services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
@@ -88,6 +97,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// ----- MIDDLEWARE -----
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseSerilogRequestLogging();
 
 // ----- DATABASE SEEDING -----
 if (app.Environment.IsDevelopment())

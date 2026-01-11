@@ -26,18 +26,24 @@ public class AuthService : IAuthService
     {
         var user = await _dbContext.Accounts
             .Include(r=>r.Role)
+            .Include(r=>r.Person)
             .FirstOrDefaultAsync(a=> a.Login == request.Login, cancellationToken);
         if (user == null) throw new UnauthorizedAccessException("Invalid login");
         
         var verification = _passwordHasher.VerifyHashedPassword(
             user,
-            user.Password,
+            user.PasswordHash,
             request.Password
         );
 
         if (verification == PasswordVerificationResult.Failed) throw new UnauthorizedAccessException("Invalid login or password");
         
-        var accessToken = _tokenService.GenerateToken(user.Login, user.Role.Name);
+        var accessToken = _tokenService.GenerateToken(
+            user.Login,
+            user.Role.Name,
+            user.Person.Email,
+            user.Person.Id
+            );
 
         return new AuthResponse
         {
@@ -71,18 +77,17 @@ public class AuthService : IAuthService
                 Phone = request.Phone,
             };
             
-            _dbContext.People.Add(newPerson);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            // _dbContext.People.Add(newPerson);
             
             var newAccount = new Account()
             {
                 Login = request.Login,
-                Password = "",
+                PasswordHash = "",
                 RoleId =  userRole.Id, // 1 - admin 2 - operator 3 - user
-                PersonId = newPerson.Id,
+                Person = newPerson,
             };
             
-            newAccount.Password = _passwordHasher.HashPassword(newAccount, request.Password);
+            newAccount.PasswordHash = _passwordHasher.HashPassword(newAccount, request.Password);
             
             _dbContext.Accounts.Add(newAccount);
             await _dbContext.SaveChangesAsync(cancellationToken);
