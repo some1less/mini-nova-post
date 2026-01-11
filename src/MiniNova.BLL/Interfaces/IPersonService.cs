@@ -5,12 +5,13 @@ namespace MiniNova.BLL.Interfaces;
 
 public interface IPersonService
 {
-    Task<PagedResponse<PersonAllDTO>> GetAllAsync(int page = 1, int pageSize = 10);    Task<PersonResponseDTO?> GetPersonByIdAsync(int personId);
+    Task<PagedResponse<PersonAllDTO>> GetAllAsync(CancellationToken cancellationToken, int page = 1, int pageSize = 10);    
+    Task<PersonResponseDTO?> GetPersonByIdAsync(int personId, CancellationToken cancellationToken);
     
-    Task<PersonResponseDTO> CreatePersonAsync(PersonDTO person);
-    Task UpdatePersonAsync(PersonDTO person, int personId);
+    Task<PersonResponseDTO> CreatePersonAsync(PersonDTO person, CancellationToken cancellationToken);
+    Task UpdatePersonAsync(PersonDTO person, int personId, CancellationToken cancellationToken);
     
-    Task DeletePersonAsync(int personId);
+    Task DeletePersonAsync(int personId, CancellationToken cancellationToken);
     
-    Task<int?> GetPersonIdByLoginAsync(string login);
+    Task<int?> GetPersonIdByLoginAsync(string login, CancellationToken cancellationToken);
 }

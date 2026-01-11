@@ -16,11 +16,11 @@ public class DestinationController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetDestinations()
+    public async Task<IActionResult> GetDestinations(CancellationToken cancellationToken)
     {
         var list = await _context.Locations
             .Select(d => new { d.Id, Address = $"{d.Country}, {d.City}, {d.Address}, {d.Postcode}" })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
         
         return Ok(list);
     }

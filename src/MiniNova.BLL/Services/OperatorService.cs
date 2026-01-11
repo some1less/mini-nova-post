@@ -14,7 +14,7 @@ public class OperatorService : IOperatorService
         _dbContext = dbContext;
     }
     
-    public async Task<List<OperatorByIdDTO>> GetAllOperatorsAsync()
+    public async Task<List<OperatorByIdDTO>> GetAllOperatorsAsync(CancellationToken cancellationToken)
     {
         return await _dbContext.Operators
             .Include(o => o.Person)
@@ -25,15 +25,15 @@ public class OperatorService : IOperatorService
                 Name = $"{oper.Person.FirstName} {oper.Person.LastName}",
                 Occupation = oper.Occupation.Name,
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<OperatorByIdDTO?> GetOperatorByIdAsync(int operatorId)
+    public async Task<OperatorByIdDTO?> GetOperatorByIdAsync(int operatorId, CancellationToken cancellationToken)
     {
         var oper = await _dbContext.Operators
             .Include(x => x.Occupation)
             .Include(p => p.Person)
-            .FirstOrDefaultAsync(o => o.Id == operatorId);
+            .FirstOrDefaultAsync(o => o.Id == operatorId, cancellationToken);
         
         if (oper == null) return null;
 

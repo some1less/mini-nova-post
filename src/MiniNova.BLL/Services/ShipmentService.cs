@@ -24,7 +24,7 @@ public class ShipmentService : IShipmentService
     
     public async Task<PagedResponse<ShipmentAllDTO>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize = 10)
     {
-        var query = _dbContext.Shipments.AsQueryable();
+        var query = _dbContext.Shipments.AsNoTracking().AsQueryable();
 
         var totalCount = await query.CountAsync(cancellationToken);
 

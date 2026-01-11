@@ -17,14 +17,6 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ----- SERILOG ------
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
-    .CreateLogger();
-
-builder.Host.UseSerilog();
-
 // ----- CONFIG ------
 var connectionString = builder.Configuration.GetConnectionString("MNPConnection")
     ?? throw new InvalidOperationException("Connection string not found");
@@ -37,7 +29,7 @@ builder.Services.Configure<JwtOptions>(jwtSection);
 
 // ------ DATABASE ------
 builder.Services.AddDbContext<NovaDbContext>(options => 
-    options.UseSqlite(connectionString));
+    options.UseNpgsql(connectionString));
 
 // ----- SERVICES ------
 builder.Services.AddControllers()
@@ -104,7 +96,6 @@ var app = builder.Build();
 // ----- MIDDLEWARE -----
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-app.UseSerilogRequestLogging();
 
 // ----- DATABASE SEEDING -----
 if (app.Environment.IsDevelopment())
@@ -114,17 +105,17 @@ if (app.Environment.IsDevelopment())
         var db = scope.ServiceProvider.GetRequiredService<NovaDbContext>();
         db.Database.EnsureDeleted();
         db.Database.Migrate();
-        var path = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "scripts", "insert.sql");
+        var path = Path.Combine(AppContext.BaseDirectory, "scripts", "insert.sql");
 
         if (File.Exists(path))
         {
             var sql = File.ReadAllText(path);
             db.Database.ExecuteSqlRaw(sql);
-            Console.WriteLine("Database seeded successfully from SQL file!");
+            Log.Information("Database seeded successfully from SQL file!");
         }
         else
         {
-            Console.WriteLine($"SQL File not found at: {path}");
+            Log.Warning($"SQL File not found at: {path}. Skipping seed.");
         }
     }
 }

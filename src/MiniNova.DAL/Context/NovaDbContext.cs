@@ -30,14 +30,14 @@ public class NovaDbContext : DbContext
             entity.HasIndex(e => e.TrackId).IsUnique();
             entity.Property(e => e.TrackId).HasMaxLength(17).IsRequired();
             entity.Property(e => e.Weight).HasPrecision(18, 2);
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
         
         // tracking
         
         modelBuilder.Entity<Tracking>(entity =>
         {
-            entity.Property(e => e.UpdateTime).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.UpdateTime).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
         
         // decimal numbers

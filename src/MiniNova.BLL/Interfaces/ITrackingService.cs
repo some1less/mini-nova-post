@@ -5,8 +5,8 @@ namespace MiniNova.BLL.Interfaces;
 public interface ITrackingService
 {
     
-    Task<IEnumerable<TrackingResponseDTO>> GetHistoryByPackageIdAsync(int packageId);
-    Task<TrackingResponseDTO> AddTrackingAsync(TrackingDTO trackingDto, string operatorEmail);
-    Task UpdateTrackingAsync(int trackingId, UpdateTrackingDTO trackingDto);
-    Task DeleteTrackingAsync(int trackingId);
+    Task<IEnumerable<TrackingResponseDTO>> GetHistoryByPackageIdAsync(int packageId, CancellationToken cancellationToken);
+    Task<TrackingResponseDTO> AddTrackingAsync(TrackingDTO trackingDto, string operatorEmail, CancellationToken cancellationToken);
+    Task UpdateTrackingAsync(int trackingId, UpdateTrackingDTO trackingDto, CancellationToken cancellationToken);
+    Task DeleteTrackingAsync(int trackingId, CancellationToken cancellationToken);
 }

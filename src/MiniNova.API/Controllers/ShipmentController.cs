@@ -8,7 +8,6 @@ namespace MiniNova.API.Controllers
 {
     [Route("api/shipments")]
     [ApiController]
-    [Authorize]
     public class ShipmentController : ControllerBase
     {
         private readonly IShipmentService _shipmentService;
@@ -19,14 +18,14 @@ namespace MiniNova.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin, Operator")]
+        [Authorize(Roles = "Admin, Operator")] 
         public async Task<IActionResult> GetShipments(CancellationToken cancellationToken, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         { 
             var result = await _shipmentService.GetAllAsync(cancellationToken, page, pageSize);
             return Ok(result);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetShipment([FromRoute] int id, CancellationToken cancellationToken)
         {
             var package = await _shipmentService.GetShipmentByIdAsync(id, cancellationToken);

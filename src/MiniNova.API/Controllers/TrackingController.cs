@@ -19,87 +19,39 @@ namespace MiniNova.API.Controllers
         }
         
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetHistory(int id)
+        public async Task<IActionResult> GetHistory(int id, CancellationToken cancellationToken)
         {
-            try
-            {
-                var history = await _trackingService.GetHistoryByPackageIdAsync(id);
-                return Ok(history);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            var history = await _trackingService.GetHistoryByPackageIdAsync(id, cancellationToken);
+            return Ok(history);
         }
         
         [HttpPost]
         [Authorize(Roles = "Admin, Operator")]
-        public async Task<IActionResult> AddStatus([FromBody] TrackingDTO dto)
+        public async Task<IActionResult> AddStatus([FromBody] TrackingDTO dto, CancellationToken cancellationToken)
         {
-            try
-            {
-                var login = User.FindFirst("name")?.Value;
+            var login = User.FindFirst("name")?.Value;
                 
-                if (string.IsNullOrEmpty(login)) 
-                    return Unauthorized(new { message = "User email not found in token" });
+            if (string.IsNullOrEmpty(login)) 
+                return Unauthorized(new { message = "User email not found in token" });
 
-                var result = await _trackingService.AddTrackingAsync(dto, login);
-                return Ok(result);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Forbid(ex.Message);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            var result = await _trackingService.AddTrackingAsync(dto, login, cancellationToken);
+            return Ok(result);
         }
         
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin, Operator")]
-        public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateTrackingDTO dto)
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateTrackingDTO dto, CancellationToken cancellationToken)
         {
-            try
-            {
-                await _trackingService.UpdateTrackingAsync(id, dto);
-                return Ok(new { message = "Tracking status updated successfully" });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            await _trackingService.UpdateTrackingAsync(id, dto, cancellationToken);
+            return Ok(new { message = "Tracking status updated successfully" });
         }
         
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteStatus(int id)
+        public async Task<IActionResult> DeleteStatus(int id, CancellationToken cancellationToken)
         {
-            try
-            {
-                await _trackingService.DeleteTrackingAsync(id);
-                return Ok(new { message = "Tracking record deleted successfully" });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            await _trackingService.DeleteTrackingAsync(id, cancellationToken);
+            return Ok(new { message = "Tracking record deleted successfully" });
         }
     }
 }

@@ -26,6 +26,7 @@ public class TrackingNumberGeneratorService : ITrackingNumberGeneratorService
 
     public string GenerateTrackingNumber(string countryName, int sizeId, decimal weight)
     {
+        // XX XXXX XXXX XXX X
         var stringBuilder = new StringBuilder();
         if (string.IsNullOrEmpty(countryName) || !EuroCodes.TryGetValue(countryName, out var code))
         {

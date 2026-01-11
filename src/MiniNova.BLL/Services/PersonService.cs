@@ -17,11 +17,11 @@ public class PersonService : IPersonService
         _dbContext = dbContext;
     }
     
-    public async Task<PagedResponse<PersonAllDTO>> GetAllAsync(int page = 1, int pageSize = 10)
+    public async Task<PagedResponse<PersonAllDTO>> GetAllAsync(CancellationToken cancellationToken, int page = 1, int pageSize = 10)
     {
         var query = _dbContext.People.AsNoTracking().AsQueryable();
 
-        var totalCount = await query.CountAsync();
+        var totalCount = await query.CountAsync(cancellationToken);
         
         var items = await query
             .OrderBy(p => p.LastName)
@@ -32,7 +32,7 @@ public class PersonService : IPersonService
                 Id = p.Id,
                 FullName = $"{p.FirstName} {p.LastName}",
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return new PagedResponse<PersonAllDTO>
         {
@@ -43,11 +43,11 @@ public class PersonService : IPersonService
         };
     }
 
-    public async Task<PersonResponseDTO?> GetPersonByIdAsync(int id)
+    public async Task<PersonResponseDTO?> GetPersonByIdAsync(int id, CancellationToken cancellationToken)
     {
         var person = await _dbContext.People
             .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == id);
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
         if (person == null)
         {
@@ -63,7 +63,7 @@ public class PersonService : IPersonService
         };
     }
 
-    public async Task<PersonResponseDTO> CreatePersonAsync(PersonDTO personDto)
+    public async Task<PersonResponseDTO> CreatePersonAsync(PersonDTO personDto, CancellationToken cancellationToken)
     {
         
         string? phoneNumber = string.IsNullOrWhiteSpace(personDto.Phone) ? null : personDto.Phone;
@@ -77,7 +77,7 @@ public class PersonService : IPersonService
         };
         
         _dbContext.People.Add(person);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
         return new PersonResponseDTO()
         {
@@ -88,10 +88,10 @@ public class PersonService : IPersonService
         };
     }
 
-    public async Task UpdatePersonAsync(PersonDTO updatePerson, int personId)
+    public async Task UpdatePersonAsync(PersonDTO updatePerson, int personId, CancellationToken cancellationToken)
     {
         var person = await _dbContext.People
-            .FirstOrDefaultAsync(p => p.Id == personId);
+            .FirstOrDefaultAsync(p => p.Id == personId, cancellationToken);
 
         if (person == null) throw new KeyNotFoundException($"Person with id {personId} not found");
 
@@ -99,27 +99,25 @@ public class PersonService : IPersonService
         person.LastName = updatePerson.LastName;
         person.Email = updatePerson.Email;
         person.Phone = string.IsNullOrWhiteSpace(updatePerson.Phone) ? null : updatePerson.Phone;
-
-        // commented due automatic tracking by EF
-        // _dbContext.Entry(person).State = EntityState.Modified; 
-        await _dbContext.SaveChangesAsync();
+        
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
     }
 
-    public async Task DeletePersonAsync(int personId)
+    public async Task DeletePersonAsync(int personId, CancellationToken cancellationToken)
     {
         var person = await _dbContext.People
-            .FirstOrDefaultAsync(p => p.Id == personId);
+            .FirstOrDefaultAsync(p => p.Id == personId, cancellationToken);
         if (person == null) throw new KeyNotFoundException($"Person with id {personId} not found");
         
         _dbContext.People.Remove(person);
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<int?> GetPersonIdByLoginAsync(string login)
+    public async Task<int?> GetPersonIdByLoginAsync(string login, CancellationToken cancellationToken)
     {
         var account = await _dbContext.Accounts
-            .FirstOrDefaultAsync(a => a.Login == login);
+            .FirstOrDefaultAsync(a => a.Login == login, cancellationToken);
         
         return account?.PersonId;
     }

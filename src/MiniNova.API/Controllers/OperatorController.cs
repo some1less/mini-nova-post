@@ -18,35 +18,20 @@ namespace MiniNova.API.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetOperators()
+        public async Task<IActionResult> GetOperators(CancellationToken cancellationToken)
         {
-            try
-            {
-                var operators = await _operatorService.GetAllOperatorsAsync();
-                return Ok(operators);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            var operators = await _operatorService.GetAllOperatorsAsync(cancellationToken);
+            return Ok(operators);
         }
 
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetOperator(int id)
+        public async Task<IActionResult> GetOperator(int id, CancellationToken cancellationToken)
         {
-            try
-            {
-                var oper = await _operatorService.GetOperatorByIdAsync(id);
-                if (oper == null) return NotFound();
+            var oper = await _operatorService.GetOperatorByIdAsync(id, cancellationToken);
+            if (oper == null) return NotFound();
 
-                return Ok(oper);
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            return Ok(oper);
         }
     }
 }

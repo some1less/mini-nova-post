@@ -438,4 +438,4 @@ Desktop.ini
 .idea/
 bin/
 obj/
-src/MiniNova.API/*.json
+src/MiniNova.API/*.json.env
