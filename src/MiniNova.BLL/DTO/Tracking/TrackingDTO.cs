@@ -8,6 +8,5 @@ public class TrackingDTO
     public int PackageId { get; set; }
     
     [Required]
-    [MinLength(6, ErrorMessage = "Status has to be at least 10 characters")]
-    public required string Status { get; set; }
+    public int StatusId { get; set; }
 }

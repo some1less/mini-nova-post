@@ -42,9 +42,9 @@ builder.Services.AddControllers()
 builder.Services.AddScoped<IPersonService, PersonService>();
 builder.Services.AddScoped<IOperatorService, OperatorService>();
 builder.Services.AddScoped<IShipmentService, ShipmentService>();
-// builder.Services.AddScoped<ITrackingService, TrackingService>();
+builder.Services.AddScoped<ITrackingService, TrackingService>();
 
-builder.Services.AddTransient<ITrackingNumberGeneratorService, TrackingNumberGeneratorService>();
+builder.Services.AddSingleton<ITrackingNumberGeneratorService, TrackingNumberGeneratorService>();
 
 // ----- SECURITY SERVICES ------
 builder.Services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();

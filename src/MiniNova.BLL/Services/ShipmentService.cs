@@ -85,11 +85,7 @@ public class ShipmentService : IShipmentService
         if (package == null) throw new KeyNotFoundException($"Package with id {packageId} not found");
         
         var sortedHistory = package.Trackings.OrderByDescending(t => t.UpdateTime).ToList();
-
-        var lastStatus = package.Trackings
-            .OrderByDescending(t => t.UpdateTime)
-            .Select(t => t.Status.Name)
-            .FirstOrDefault() ?? "null";
+        var lastStatus = sortedHistory.FirstOrDefault()?.Status?.Name ?? "Registered";
         
         return new ShipmentByIdDTO()
         {
@@ -119,7 +115,7 @@ public class ShipmentService : IShipmentService
             History = sortedHistory.Select(t => new TrackingResponseDTO
             {
                 Id = t.Id,
-                Status = t.Status.Name,
+                Status = t.Status?.Name ?? "Unknown",
                 UpdateTime = t.UpdateTime.ToString("yyyy-MM-dd HH:mm"),
                 OperatorName = t.Operator != null 
                     ? $"{t.Operator.Person.FirstName} {t.Operator.Person.LastName}" 
@@ -347,7 +343,7 @@ public class ShipmentService : IShipmentService
             History = sortedHistory.Select(t => new TrackingResponseDTO
             {
                 Id = t.Id,
-                Status = t.Status.Name,
+                Status = t.Status?.Name ?? "Unknown",
                 UpdateTime = t.UpdateTime.ToString("yyyy-MM-dd HH:mm"),
                 OperatorName = t.Operator != null 
                     ? $"{t.Operator.Person.FirstName} {t.Operator.Person.LastName}" 
