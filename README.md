@@ -1,5 +1,4 @@
-
-<img width="1057" height="457" alt="Screenshot 2026-01-03 at 21 27 14" src="https://github.com/user-attachments/assets/37584c22-7f60-4926-a651-5a7984ef1ad6" />
+<img width="2106" height="1234" alt="image" src="https://github.com/user-attachments/assets/78dc2ca0-5287-4230-8001-f015bb7ef48a" />
 
 # Mini Nova Post
 
