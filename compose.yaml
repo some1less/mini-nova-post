@@ -37,5 +37,19 @@ services:
       timeout: 5s
       retries: 10
 
+  client:
+    build:
+      context: ./src/Client 
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./src/Client:/app
+      - /app/node_modules    
+    environment:
+      - VITE_API_URL=http://localhost:5050
+    depends_on:
+      - mininova.api
+
 volumes:
   pgdata:
