@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MiniNova.API.Middleware;
+using MiniNova.BLL.Generators;
 using MiniNova.BLL.Helpers.Options;
 using MiniNova.BLL.Interfaces;
 using MiniNova.BLL.Security.Auth;
@@ -50,6 +51,8 @@ builder.Services.AddScoped<IPersonService, PersonService>();
 builder.Services.AddScoped<IOperatorService, OperatorService>();
 builder.Services.AddScoped<IShipmentService, ShipmentService>();
 // builder.Services.AddScoped<ITrackingService, TrackingService>();
+
+builder.Services.AddTransient<ITrackingNumberGeneratorService, TrackingNumberGeneratorService>();
 
 // ----- SECURITY SERVICES ------
 builder.Services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();

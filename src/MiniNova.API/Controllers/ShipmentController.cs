@@ -26,11 +26,19 @@ namespace MiniNova.API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetShipment([FromRoute] int id, CancellationToken cancellationToken)
         {
             var package = await _shipmentService.GetShipmentByIdAsync(id, cancellationToken);
             return Ok(package);
+        }
+        
+        [HttpGet("tracking/{trackingNumber}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetByTrackingNumber([FromRoute] string trackingNumber, CancellationToken cancellationToken)
+        {
+            var result = await _shipmentService.GetShipmentByTrackingNumberAsync(trackingNumber, cancellationToken);
+            return Ok(result);
         }
         
         [HttpPost]
@@ -75,8 +83,8 @@ namespace MiniNova.API.Controllers
             var result = await _shipmentService.GetUserShipmentsAsync(userId, cancellationToken, page, pageSize);
             return Ok(result);
         }
-
     }
+    
 }
 
 

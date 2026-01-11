@@ -38,21 +38,21 @@
 
 -- === LOCATIONS ===
         INSERT INTO Locations (Id, Country, City, Address, Postcode) VALUES
-                                                                         (1, 'UA', 'Kyiv', 'Khreshchatyk 1', 01001),
-                                                                         (2, 'GB', 'London', 'Baker Street 221B', 10000),
-                                                                         (3, 'FR', 'Paris', 'Rue de Rivoli 14', 75001),
-                                                                         (4, 'DE', 'Berlin', 'Friedrichstrasse 101', 10117),
-                                                                         (5, 'IT', 'Rome', 'Via del Corso 50', 00186),
-                                                                         (6, 'ES', 'Madrid', 'Calle Mayor 12', 28013),
-                                                                         (7, 'PL', 'Warsaw', 'Nowy Swiat 4', 00042),
-                                                                         (8, 'CZ', 'Prague', 'Charles Bridge 11', 11000),
-                                                                         (9, 'AT', 'Vienna', 'Stephansplatz 2', 1010),
-                                                                         (10, 'CH', 'Zurich', 'Bahnhofstrasse 7', 8001),
-                                                                         (11, 'UA', 'Lviv', 'Rynok Square 10', 79000),
-                                                                         (12, 'PL', 'Krakow', 'Florianska 15', 31021),
-                                                                         (13, 'DE', 'Munich', 'Marienplatz 1', 80331),
-                                                                         (14, 'NL', 'Amsterdam', 'Dam Square 5', 1012),
-                                                                         (15, 'BE', 'Brussels', 'Grand Place 3', 1000);
+                                                                         (1, 'Ukraine', 'Kyiv', 'Khreshchatyk 1', 01001),
+                                                                         (2, 'United Kingdom', 'London', 'Baker Street 221B', 10000),
+                                                                         (3, 'France', 'Paris', 'Rue de Rivoli 14', 75001),
+                                                                         (4, 'Germany', 'Berlin', 'Friedrichstrasse 101', 10117),
+                                                                         (5, 'Italy', 'Rome', 'Via del Corso 50', 00186),
+                                                                         (6, 'Spain', 'Madrid', 'Calle Mayor 12', 28013),
+                                                                         (7, 'Poland', 'Warsaw', 'Nowy Swiat 4', 00042),
+                                                                         (8, 'Czech Republic', 'Prague', 'Charles Bridge 11', 11000),
+                                                                         (9, 'Austria', 'Vienna', 'Stephansplatz 2', 1010),
+                                                                         (10, 'Switzerland', 'Zurich', 'Bahnhofstrasse 7', 8001),
+                                                                         (11, 'Ukraine', 'Lviv', 'Rynok Square 10', 79000),
+                                                                         (12, 'Poland', 'Krakow', 'Florianska 15', 31021),
+                                                                         (13, 'Germany', 'Munich', 'Marienplatz 1', 80331),
+                                                                         (14, 'Netherlands', 'Amsterdam', 'Dam Square 5', 1012),
+                                                                         (15, 'Belgium', 'Brussels', 'Grand Place 3', 1000);
 
         -- ==========================================================
 -- 2. PEOPLE & ACCOUNTS

@@ -6,6 +6,7 @@ namespace MiniNova.BLL.DTO.Package;
 public class ShipmentByIdDTO
 {
     public int Id { get; set; }
+    public required string TrackingNo { get; set; }
     public required PersonResponseDTO Shipper { get; set; }
     public required PersonResponseDTO Consignee { get; set; }
     

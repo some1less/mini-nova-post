@@ -12,4 +12,5 @@ public interface IShipmentService
     Task UpdateShipmentAsync(UpdateShipmentDTO package, int packageId, CancellationToken cancellationToken);
     Task DeleteShipmentAsync(int packageId, CancellationToken cancellationToken);
     Task<PagedResponse<ShipmentByIdDTO>> GetUserShipmentsAsync(int userId, CancellationToken cancellationToken, int page, int pageSize);
+    Task<ShipmentByIdDTO> GetShipmentByTrackingNumberAsync(string trackingNumber, CancellationToken cancellationToken);
 }

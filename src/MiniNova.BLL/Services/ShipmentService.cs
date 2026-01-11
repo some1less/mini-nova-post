@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MiniNova.BLL.DTO.Package;
 using MiniNova.BLL.DTO.People;
 using MiniNova.BLL.DTO.Tracking;
+using MiniNova.BLL.Generators;
 using MiniNova.BLL.Interfaces;
 using MiniNova.BLL.Pagination;
 using MiniNova.DAL.Context;
@@ -13,10 +14,12 @@ public class ShipmentService : IShipmentService
 {
     
     private readonly NovaDbContext _dbContext;
+    private readonly ITrackingNumberGeneratorService _trackingNumberGenerator;
 
-    public ShipmentService(NovaDbContext dbContext)
+    public ShipmentService(NovaDbContext dbContext,  ITrackingNumberGeneratorService trackingNumberGenerator)
     {
         _dbContext = dbContext;
+        _trackingNumberGenerator = trackingNumberGenerator;
     }
     
     public async Task<PagedResponse<ShipmentAllDTO>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize = 10)
@@ -32,6 +35,7 @@ public class ShipmentService : IShipmentService
             .Select(p => new ShipmentAllDTO 
             { 
                 Id = p.Id,
+                TrackingNo = p.TrackId,
                 Description = p.Description,
                 Sender = new PersonAllShipmentsDTO()
                 {
@@ -90,6 +94,7 @@ public class ShipmentService : IShipmentService
         return new ShipmentByIdDTO()
         {
             Id = package.Id,
+            TrackingNo = package.TrackId,
             Shipper = new PersonResponseDTO()
             {
                 Id = package.Shipper.Id,
@@ -149,15 +154,17 @@ public class ShipmentService : IShipmentService
             .FirstOrDefaultAsync(d => d.Id == packageDto.DestinationId,  cancellationToken);
         if (destination == null)
             throw new KeyNotFoundException($"Destination with id {packageDto.DestinationId} not found");
-    
+        
         if (sender.Id == receiver.Id)
         {
             throw new ArgumentException("You cannot send a package to yourself via our service.");
         }
         
+        string generateTrackNo = _trackingNumberGenerator.GenerateTrackingNumber(destination.Country, packageDto.SizeId, packageDto.Weight);
+        
         var package = new Shipment()
         {
-            TrackId = "temp",
+            TrackId = generateTrackNo,
             ShipperId = sender.Id,
             ConsigneeId = receiver.Id,
             DestinationId = packageDto.DestinationId,
@@ -244,6 +251,7 @@ public class ShipmentService : IShipmentService
             return new ShipmentByIdDTO
             {
                 Id = p.Id,
+                TrackingNo = p.TrackId,
                 Description = p.Description,
                 Size = p.Size.Name,
                 Weight = p.Weight,
@@ -277,6 +285,75 @@ public class ShipmentService : IShipmentService
             TotalCount = totalCount,
             Page = page,
             PageSize = pageSize
+        };
+    }
+
+    public async Task<ShipmentByIdDTO> GetShipmentByTrackingNumberAsync(string trackingNumber, CancellationToken cancellationToken)
+    {
+        if (!_trackingNumberGenerator.ValidateTrackingNumber(trackingNumber))
+        {
+            throw new ArgumentException("Invalid tracking number format or checksum.");
+        }
+        
+        var cleanTrackNo = trackingNumber.Replace(" ", "").Replace("-", "").ToUpper();
+        
+        var package = await _dbContext.Shipments
+            .Include(d => d.Destination)
+            .Include(d => d.Origin)
+            .Include(s => s.Shipper)
+            .Include(r => r.Consignee)
+            .Include(p => p.Trackings).ThenInclude(t => t.Operator).ThenInclude(o => o.Person)
+            .Include(p => p.Trackings).ThenInclude(t => t.Operator).ThenInclude(o => o.Occupation)
+            .Include(p => p.Size)
+            .Include(p => p.Trackings).ThenInclude(t => t.Status)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.TrackId == cleanTrackNo, cancellationToken);
+        
+        if (package == null) 
+            throw new KeyNotFoundException($"Shipment with tracking number '{trackingNumber}' not found");
+
+        var sortedHistory = package.Trackings.OrderByDescending(t => t.UpdateTime).ToList();
+
+        var lastStatus = package.Trackings
+            .OrderByDescending(t => t.UpdateTime)
+            .Select(t => t.Status.Name)
+            .FirstOrDefault() ?? "null";
+        
+        return new ShipmentByIdDTO()
+        {
+            Id = package.Id,
+            TrackingNo = package.TrackId,
+            Shipper = new PersonResponseDTO()
+            {
+                Id = package.Shipper.Id,
+                FullName = $"{package.Shipper.FirstName} {package.Shipper.LastName}",
+                Email = package.Shipper.Email,
+                Phone = package.Shipper.Phone,
+            },
+            Consignee = new PersonResponseDTO()
+            {
+                Id = package.Consignee.Id,
+                FullName = $"{package.Consignee.FirstName} {package.Consignee.LastName}",
+                Email = package.Consignee.Email,
+                Phone = package.Consignee.Phone,
+            },
+            Description = package.Description,
+            Size = package.Size.Name,
+            Weight = package.Weight,
+
+            DestinationAddress = $"{package.Destination.Address}, {package.Destination.City}",
+            
+            Status = lastStatus,
+            History = sortedHistory.Select(t => new TrackingResponseDTO
+            {
+                Id = t.Id,
+                Status = t.Status.Name,
+                UpdateTime = t.UpdateTime.ToString("yyyy-MM-dd HH:mm"),
+                OperatorName = t.Operator != null 
+                    ? $"{t.Operator.Person.FirstName} {t.Operator.Person.LastName}" 
+                    : "System",
+                OperatorRole = t.Operator?.Occupation.Name ?? "Auto"
+            })
         };
     }
 }
