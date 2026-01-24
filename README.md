@@ -10,7 +10,7 @@ This repository gives an overview of the **Mini Nova Post** ecosystem, a simple 
 
 The project utilizes a modern, robust stack to ensure high performance and maintainability:
 
-* **Backend**: .NET 8 (C#)
+* **Backend**: .NET 8
 * **Frontend**: React (SPA)
 * **Database**: PostgreSQL.
 * **ORM**: Entity Framework Core
