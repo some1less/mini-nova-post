@@ -12,9 +12,9 @@ The project utilizes a modern, robust stack to ensure high performance and maint
 
 * **Backend**: .NET 8
 * **Frontend**: React (SPA)
-* **Database**: PostgreSQL.
+* **Database**: PostgreSQL
 * **ORM**: Entity Framework Core
-* **Containerization**: Frontend, Backend, and database are containerized separately using Docker.
+* **Containerization**: Frontend, Backend, and database are containerized separately using Docker
 
 # Features
 
