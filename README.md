@@ -10,11 +10,11 @@ This repository gives an overview of the **Mini Nova Post** ecosystem, a simple 
 
 The project utilizes a modern, robust stack to ensure high performance and maintainability:
 
-* **Backend**: .NET 8 (C#) following Layered Architecture.
-* **Frontend**: React (SPA) for a seamless user interface.
-* **Database**: PostgreSQL (Containerized).
-* **ORM**: Entity Framework Core with Repository/Service patterns.
-* **Containerization**: Docker & Docker Compose.
+* **Backend**: .NET 8 (C#)
+* **Frontend**: React (SPA)
+* **Database**: PostgreSQL.
+* **ORM**: Entity Framework Core
+* **Containerization**: Frontend, Backend, and database are containerized separately using Docker.
 
 # Features
 
