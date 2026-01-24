@@ -1,4 +1,4 @@
-<img width="2106" height="1234" alt="image" src="https://github.com/user-attachments/assets/78dc2ca0-5287-4230-8001-f015bb7ef48a" />
+<img width="1939" height="627" alt="Frame 1-2" src="https://github.com/user-attachments/assets/ea6a365a-086f-4f0b-80c7-8df8fd32a77e" />
 
 # Mini Nova Post
 
@@ -61,3 +61,12 @@ docker-compose up --build
 
 * **API / Swagger:** `http://localhost:5050/swagger`
 * **Frontend:** `http://localhost:5173`
+
+# Extras
+
+For all other additional features you can refer to this paragraph.
+
+## Database Schema
+
+<img width="2106" height="1234" alt="image" src="https://github.com/user-attachments/assets/78dc2ca0-5287-4230-8001-f015bb7ef48a" />
+
