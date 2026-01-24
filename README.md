@@ -2,9 +2,9 @@
 
 # Mini Nova Post
 
-This repository provides an overview of the **Mini Nova Post** ecosystem — a streamlined logistics simulation platform inspired by modern postal services.
+This repository gives an overview of the **Mini Nova Post** ecosystem, a simple logistics simulation platform inspired by the modern postal service **[Nova Post](https://novapost.com)**.
 
-**Mini Nova Post** is an application designed to bridge the gap between clients and logistics operations. It empowers users to manage digital documents for their parcels and interact with delivery services in a few clicks, eliminating traditional paperwork and queues. At the heart of this project are **efficiency**, **transparency**, and **reliability**.
+**Mini Nova Post** is a web application designed to master .NET and React knowledge. It allows users to send and manage their parcels and interact with delivery services in a few clicks, eliminating traditional paperwork and queues. At the heart of this project are **efficiency**, **transparency**, and **reliability**.
 
 # Technology Stack
 
