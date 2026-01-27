@@ -16,7 +16,7 @@ const OperatorDashboard = () => {
     useEffect(() => {
         const fetchPackages = async () => {
             try {
-                const response = await apiClient.get('/packages');
+                const response = await apiClient.get('/shipments');
                 setPackages(Array.isArray(response.data) ? response.data : response.data.items || []);
             } catch (error) {
                 console.error("Error fetching packages:", error);

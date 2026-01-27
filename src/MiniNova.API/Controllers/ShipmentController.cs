@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ namespace MiniNova.API.Controllers
 {
     [Route("api/shipments")]
     [ApiController]
+    [Authorize]
     public class ShipmentController : ControllerBase
     {
         private readonly IShipmentService _shipmentService;
@@ -41,17 +43,13 @@ namespace MiniNova.API.Controllers
         }
         
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> PostShipment([FromBody] CreateShipmentDTO package, CancellationToken cancellationToken)
         {
-            int? currentUserId = null;
-
-            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                
-            if (int.TryParse(userIdString, out int parsedId)) { 
-                currentUserId = parsedId;
-            }
+            var userIdString = User.FindFirst("userid")?.Value;
+            var userId = int.Parse(userIdString!);
             
-            var created = await _shipmentService.CreateShipmentAsync(package, cancellationToken, currentUserId);    
+            var created = await _shipmentService.CreateShipmentAsync(package, cancellationToken, userId);    
             return CreatedAtAction(nameof(GetShipment), new { id = created.Id }, created);
         }
 
@@ -75,11 +73,10 @@ namespace MiniNova.API.Controllers
         [Authorize(Roles = "User")]
         public async Task<IActionResult> GetMyShipments(CancellationToken cancellationToken, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdString, out int userId)) { 
-                return Unauthorized(new { error = "Invalid token data" });
-            }
-            var result = await _shipmentService.GetUserShipmentsAsync(userId, cancellationToken, page, pageSize);
+            var userId = User.FindFirst("userid")?.Value;
+            var userIdInt = int.Parse(userId!);
+            
+            var result = await _shipmentService.GetUserShipmentsAsync(userIdInt, cancellationToken, page, pageSize);
             return Ok(result);
         }
     }

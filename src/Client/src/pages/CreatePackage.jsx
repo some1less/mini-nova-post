@@ -6,19 +6,29 @@ import './CreatePackage.css';
 
 const CreatePackage = () => {
     const navigate = useNavigate();
-    const [destinations, setDestinations] = useState([]);
+    const [locations, setLocations] = useState([]);
     const [error, setError] = useState(null);
 
+    const sizeMapping = {
+        'S': 1,
+        'M': 2,
+        'L': 3,
+        'XL': 4
+    };
+
     const [formData, setFormData] = useState({
-        receiverEmail: '',
+        consigneeEmail: '',
         description: '',
         size: 'S',
         weight: '',
+        originId: '',
         destinationId: ''
     });
 
     useEffect(() => {
-        apiClient.get('/destinations').then(res => setDestinations(res.data));
+        apiClient.get('/locations')
+            .then(res => setLocations(res.data))
+            .catch(err => console.error("Failed to load locations", err));
     }, []);
 
     const handleChange = (e) => {
@@ -30,26 +40,29 @@ const CreatePackage = () => {
         e.preventDefault();
         setError(null);
 
+        const payload = {
+            ConsigneeEmail: formData.consigneeEmail,
+            Description: formData.description,
+            SizeId: sizeMapping[formData.size],
+            Weight: parseFloat(formData.weight),
+            OriginId: parseInt(formData.originId),
+            DestinationId: parseInt(formData.destinationId),
+        };
+
         try {
-            await apiClient.post('/packages', {
-                ...formData,
-                weight: parseFloat(formData.weight),
-                destinationId: parseInt(formData.destinationId)
-            });
+            await apiClient.post('/shipments', payload);
             navigate('/');
         } catch (err) {
             console.error("Error:", err);
-
             let errorMessage = "Error creating package.";
 
-            if (err.response) {
+            if (err.response && err.response.data) {
                 if (err.response.data.errors) {
                     errorMessage = Object.values(err.response.data.errors).flat().join('\n');
-                } else if (err.response.data.error) {
-                    errorMessage = err.response.data.error;
+                } else if (err.response.data.title) {
+                    errorMessage = err.response.data.title;
                 }
             }
-
             setError(errorMessage);
         }
     };
@@ -67,26 +80,47 @@ const CreatePackage = () => {
                 {error && (
                     <div className="error-banner">
                         <AlertCircle size={20} />
-                        <span>{error}</span>
+                        <span style={{ whiteSpace: 'pre-line' }}>{error}</span>
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit}>
 
                     <div className="form-group">
-                        <label><User size={16}/> Receiver Email</label>
-                        <input name="receiverEmail" type="email" placeholder="receiver@email.com" onChange={handleChange} required />
+                        <label><User size={16}/> Consignee Email</label>
+                        <input
+                            name="consigneeEmail"
+                            type="email"
+                            placeholder="receiver@email.com"
+                            onChange={handleChange}
+                            required
+                        />
                     </div>
 
                     <div className="form-group">
                         <label><Box size={16}/> Description</label>
-                        <input name="description" type="text" placeholder="What's inside?" onChange={handleChange} required />
+                        <input
+                            name="description"
+                            type="text"
+                            placeholder="What's inside?"
+                            onChange={handleChange}
+                            required
+                        />
                     </div>
 
                     <div className="form-row">
                         <div className="form-group">
                             <label><Scale size={16}/> Weight (kg)</label>
-                            <input name="weight" type="number" step="0.1" placeholder="0.0" onChange={handleChange} required />
+                            <input
+                                name="weight"
+                                type="number"
+                                step="0.1"
+                                min="0.1"
+                                max="40"
+                                placeholder="0.0"
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
 
                         <div className="form-group">
@@ -100,14 +134,26 @@ const CreatePackage = () => {
                         </div>
                     </div>
 
-                    <div className="form-group">
-                        <label><MapPin size={16}/> Destination</label>
-                        <select name="destinationId" onChange={handleChange} required defaultValue="">
-                            <option value="" disabled>Select a city...</option>
-                            {destinations.map(d => (
-                                <option key={d.id} value={d.id}>{d.address}</option>
-                            ))}
-                        </select>
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label><MapPin size={16}/> From (Origin)</label>
+                            <select name="originId" onChange={handleChange} required defaultValue="">
+                                <option value="" disabled>Select origin...</option>
+                                {locations.map(l => (
+                                    <option key={l.id} value={l.id}>{l.city}, {l.address}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label><MapPin size={16}/> To (Destination)</label>
+                            <select name="destinationId" onChange={handleChange} required defaultValue="">
+                                <option value="" disabled>Select destination...</option>
+                                {locations.map(l => (
+                                    <option key={l.id} value={l.id}>{l.city}, {l.address}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     <button type="submit" className="submit-btn">Create Shipment</button>

@@ -27,10 +27,10 @@ public class TokenService : ITokenService
             new(JwtRegisteredClaimNames.Sub, login),
             new(JwtRegisteredClaimNames.Name, login),
             
-            new(ClaimTypes.Email, email),
-            new(ClaimTypes.NameIdentifier, personId.ToString()),
+            new(ClaimTypes.Email, email), // auto pull-up while creating shipments
+            new("userid", personId.ToString()), // auto pull-up while accessing and creating shipments
             
-            new(ClaimTypes.Role, role)
+            new(ClaimTypes.Role, role) // verification of authorized access
         };
 
         var tokenDescriptor = new SecurityTokenDescriptor

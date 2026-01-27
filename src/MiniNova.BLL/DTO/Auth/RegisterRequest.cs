@@ -25,6 +25,5 @@ public class RegisterRequest
     [EmailAddress(ErrorMessage = "Invalid email address.")]
     public required string Email { get; set; }
 
-    [Phone(ErrorMessage = "Invalid phone number.")]
     public string? Phone { get; set; }
 }

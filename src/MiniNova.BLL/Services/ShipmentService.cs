@@ -225,7 +225,7 @@ public class ShipmentService : IShipmentService
             .Include(p => p.Consignee)     
             .Include(p => p.Destination)
             .Include(p => p.Size)
-            .Include(p => p.Trackings)
+            .Include(p => p.Trackings).ThenInclude(t => t.Status)
             .Where(p => p.ShipperId == userId || p.ConsigneeId == userId);
 
         var totalCount = await query.CountAsync(cancellationToken);

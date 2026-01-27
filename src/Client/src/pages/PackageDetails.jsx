@@ -23,7 +23,7 @@ const PackageDetails = () => {
     useEffect(() => {
         const fetchDetails = async () => {
             try {
-                const response = await apiClient.get(`/packages/${id}`);
+                const response = await apiClient.get(`/shipments/${id}`);
                 setPkg(response.data);
             } catch (error) {
                 console.error("Error fetching details", error);
@@ -62,9 +62,9 @@ const PackageDetails = () => {
                         <div className="p-info">
                             <User size={18} className="icon"/>
                             <div>
-                                <strong>{pkg.sender.fullName}</strong>
-                                <div className="sub-text">{pkg.sender.email}</div>
-                                <div className="sub-text">{pkg.sender.phone}</div>
+                                <strong>{pkg.shipper.fullName}</strong>
+                                <div className="sub-text">{pkg.shipper.email}</div>
+                                <div className="sub-text">{pkg.shipper.phone}</div>
                             </div>
                         </div>
                     </div>
@@ -76,9 +76,9 @@ const PackageDetails = () => {
                         <div className="p-info">
                             <User size={18} className="icon"/>
                             <div>
-                                <strong>{pkg.receiver.fullName}</strong>
-                                <div className="sub-text">{pkg.receiver.email}</div>
-                                <div className="sub-text">{pkg.receiver.phone}</div>
+                                <strong>{pkg.consignee.fullName}</strong>
+                                <div className="sub-text">{pkg.consignee.email}</div>
+                                <div className="sub-text">{pkg.consignee.phone}</div>
                             </div>
                         </div>
                     </div>

@@ -33,15 +33,19 @@ const Register = () => {
         setErrors({});
         setGeneralError('');
 
+        const payload = {
+            ...formData,
+            phone: formData.phone.trim() === '' ? null : formData.phone
+        };
+
         try {
-            await apiClient.post('/auth/register', formData);
+            await apiClient.post('/auth/register', payload);
 
             setShowSuccess(true);
-
             setTimeout(() => {
                 navigate('/login');
             }, 2000);
-
+            
         } catch (err) {
             console.error("Registration error:", err);
 

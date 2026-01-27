@@ -28,7 +28,7 @@ const UserDashboard = () => {
     const fetchPackages = async () => {
         setLoading(true);
         try {
-            const response = await apiClient.get(`/packages/my?page=${page}&pageSize=${pageSize}`);
+            const response = await apiClient.get(`/shipments/my?page=${page}&pageSize=${pageSize}`);
             setPackages(response.data.items);
             setTotalCount(response.data.totalCount);
         } catch (error) {
@@ -77,12 +77,12 @@ const UserDashboard = () => {
                             <div className="route-row">
                                 <div className="route-point">
                                     <span className="city-label">From</span>
-                                    <span className="person-name">{pkg.sender.fullName}</span>
+                                    <span className="person-name">{pkg.shipper.fullName}</span>
                                 </div>
                                 <ArrowRight size={16} color="#9ca3af" />
                                 <div className="route-point">
                                     <span className="city-label">To</span>
-                                    <span className="person-name">{pkg.receiver.fullName}</span>
+                                    <span className="person-name">{pkg.consignee.fullName}</span>
                                 </div>
                             </div>
 

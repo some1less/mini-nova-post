@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: src/MiniNova.API/Dockerfile
     ports:
-      - "5050:8080"
+      - "5167:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__MNPConnection=Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};
@@ -47,7 +47,7 @@ services:
       - ./src/Client:/app
       - /app/node_modules    
     environment:
-      - VITE_API_URL=http://localhost:5050
+      - VITE_API_URL=http://localhost:5167
     depends_on:
       - mininova.api
 

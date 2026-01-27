@@ -10,20 +10,9 @@ export const AuthProvider = ({ children }) => {
 
     const getUserFromToken = (decoded) => {
         return {
-            // looking for login:
-            // 1. decoded.name (JwtRegisteredClaimNames.Name...))
-            // 2. long url 
-            // 3. decoded.sub (subject standard)
-            login: decoded.name ||
-                decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] ||
-                decoded.sub,
-
-            // looking for role:
-            // 1. long url (I used ClaimTypes.Role)
-            // 2. short decoded.role
-            role: decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
-                decoded.role ||
-                "User"
+            login: decoded.sub || decoded.name || "User",
+            role: decoded.role || "User",
+            id: decoded.nameid
         };
     };
 
