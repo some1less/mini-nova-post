@@ -440,4 +440,4 @@ bin/
 obj/
 src/MiniNova.API/*.json
 .env
-.rtf
+*.rtf
