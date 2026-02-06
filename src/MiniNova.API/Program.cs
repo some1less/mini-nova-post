@@ -2,9 +2,11 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using MiniNova.API.Extensions;
 using MiniNova.API.Middleware;
 using MiniNova.BLL.Generators;
 using MiniNova.BLL.Helpers.Options;
@@ -17,6 +19,9 @@ using MiniNova.DAL.Models;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ------ LOADING KEYS
+var issuerSigningKey = builder.Services.AddAsyncKeyLoading();
 
 // ----- CONFIG ------
 var connectionString = builder.Configuration.GetConnectionString("MNPConnection")
@@ -65,7 +70,6 @@ builder.Services.AddCors(options =>
         });
 });
 
-// ------ AUTHENTICATION (JWT) -----
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -73,6 +77,7 @@ builder.Services.AddAuthentication(options =>
     })
     .AddJwtBearer(options =>
     {
+        
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -82,7 +87,8 @@ builder.Services.AddAuthentication(options =>
             
             ValidIssuer = jwtOptions.Issuer,
             ValidAudience = jwtOptions.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
+            
+            IssuerSigningKey = issuerSigningKey,
             
             ClockSkew = TimeSpan.Zero
         };

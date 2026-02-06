@@ -441,3 +441,6 @@ obj/
 src/MiniNova.API/*.json
 .env
 *.rtf
+*.pem
+*.key
+**/Keys/

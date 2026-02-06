@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -10,17 +11,19 @@ namespace MiniNova.BLL.Security.Tokens;
 public class TokenService : ITokenService
 {
     private readonly JwtOptions _jwtConfig;
+    private readonly SigningCredentials _signingCredentials;
 
-    public TokenService(IOptions<JwtOptions> jwtConfig)
+    public TokenService(IOptions<JwtOptions> jwtConfig,  SigningCredentials signingCredentials)
     {
         _jwtConfig = jwtConfig.Value;
+        _signingCredentials = signingCredentials;
     }
     
     public string GenerateToken(string login, string role, string email, int personId)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_jwtConfig.Key);
-
+       
+        
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
@@ -39,8 +42,7 @@ public class TokenService : ITokenService
             Issuer = _jwtConfig.Issuer,
             Audience = _jwtConfig.Audience,
             Expires = DateTime.UtcNow.Add(TimeSpan.FromMinutes(_jwtConfig.ValidInMinutes)),
-            SigningCredentials =
-                new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            SigningCredentials =  _signingCredentials
         };
         
         var token = tokenHandler.CreateToken(tokenDescriptor);

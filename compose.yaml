@@ -15,6 +15,8 @@ services:
       - Jwt__Issuer=${JWT_ISSUER}
       - Jwt__Audience=${JWT_AUDIENCE}
       - Jwt__ValidInMinutes=${JWT_VALID_MINUTES}
+    volumes:
+      - ./src/MiniNova.API/Keys:/app/Keys
     depends_on:
       db:
         condition: service_healthy
