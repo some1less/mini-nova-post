@@ -3,7 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace MiniNova.API.Extensions;
 
-public static class AuthExtension
+public static class AuthKeysExtension
 {
     public static RsaSecurityKey AddAsyncKeyLoading(this IServiceCollection services)
     {

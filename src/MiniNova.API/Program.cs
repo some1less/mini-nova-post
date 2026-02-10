@@ -16,6 +16,8 @@ using MiniNova.BLL.Security.Tokens;
 using MiniNova.BLL.Services;
 using MiniNova.DAL.Context;
 using MiniNova.DAL.Models;
+using MiniNova.DAL.Repositories;
+using MiniNova.DAL.Repositories.Interfaces;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,6 +46,10 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.MaxDepth = 64;
     });
+
+builder.Services.AddScoped<IShipmentRepository, ShipmentRepository>();
+builder.Services.AddScoped<ILocationRepository, LocationRepository>();
+builder.Services.AddScoped<IPersonRepository, PersonRepository>();
 
 builder.Services.AddScoped<IPersonService, PersonService>();
 builder.Services.AddScoped<IOperatorService, OperatorService>();

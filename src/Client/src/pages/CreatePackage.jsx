@@ -44,7 +44,7 @@ const CreatePackage = () => {
             ConsigneeEmail: formData.consigneeEmail,
             Description: formData.description,
             SizeId: sizeMapping[formData.size],
-            Weight: parseFloat(formData.weight),
+            Weight: formData.weight ? parseFloat(formData.weight) : 0,
             OriginId: parseInt(formData.originId),
             DestinationId: parseInt(formData.destinationId),
         };
@@ -53,16 +53,29 @@ const CreatePackage = () => {
             await apiClient.post('/shipments', payload);
             navigate('/');
         } catch (err) {
-            console.error("Error:", err);
+            console.error("Error creating shipment:", err);
+
             let errorMessage = "Error creating package.";
 
             if (err.response && err.response.data) {
-                if (err.response.data.errors) {
-                    errorMessage = Object.values(err.response.data.errors).flat().join('\n');
-                } else if (err.response.data.title) {
-                    errorMessage = err.response.data.title;
+                const data = err.response.data;
+
+                if (data.detail) {
+                    errorMessage = data.detail;
                 }
+                else if (data.errors) {
+                    errorMessage = Object.values(data.errors).flat().join('\n');
+                }
+                else if (data.title) {
+                    errorMessage = data.title;
+                }
+                else if (typeof data === 'string') {
+                    errorMessage = data;
+                }
+            } else {
+                errorMessage = "Server is not responding.";
             }
+
             setError(errorMessage);
         }
     };

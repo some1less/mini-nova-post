@@ -1,7 +1,7 @@
 import { jwtDecode } from "jwt-decode";
 
 export const getUserRole = () => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (!token) return null;
     try {
         const decoded = jwtDecode(token);
@@ -12,7 +12,7 @@ export const getUserRole = () => {
 };
 
 export const getUserName = () => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (!token) return null;
     try {
         const decoded = jwtDecode(token);

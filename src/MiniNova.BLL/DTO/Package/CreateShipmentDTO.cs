@@ -5,8 +5,6 @@ namespace MiniNova.BLL.DTO.Package;
 public class CreateShipmentDTO
 {
     
-    [EmailAddress(ErrorMessage = "Invalid email address.")]
-    public string? ShipperEmail { get; set; }
     [Required]
     [EmailAddress(ErrorMessage = "Invalid email address.")]
     public required string ConsigneeEmail { get; set; }

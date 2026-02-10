@@ -45,28 +45,36 @@ const Register = () => {
             setTimeout(() => {
                 navigate('/login');
             }, 2000);
-            
+
         } catch (err) {
             console.error("Registration error:", err);
 
             if (err.response) {
-                if (err.response.status === 400 && err.response.data.errors) {
-                    const serverErrors = err.response.data.errors;
+                const data = err.response.data;
+
+               
+                if (err.response.status === 400 && data.field && data.detail) {
+                    setErrors({
+                        [data.field.toLowerCase()]: data.detail
+                    });
+                }
+                else if (err.response.status === 400 && data.errors) {
+                    const serverErrors = data.errors;
                     const formattedErrors = {};
 
                     Object.keys(serverErrors).forEach((key) => {
-
                         const fieldName = key.charAt(0).toLowerCase() + key.slice(1);
                         formattedErrors[fieldName] = serverErrors[key][0];
                     });
 
                     setErrors(formattedErrors);
                 }
-
-                else if (typeof err.response.data === 'string') {
-                    setGeneralError(err.response.data);
-                } else if (err.response.data.message) {
-                    setGeneralError(err.response.data.message);
+                else if (typeof data === 'string') {
+                    setGeneralError(data);
+                } else if (data.detail) {
+                    setGeneralError(data.detail);
+                } else if (data.message) {
+                    setGeneralError(data.message);
                 } else {
                     setGeneralError("Something went wrong. Please check your data.");
                 }

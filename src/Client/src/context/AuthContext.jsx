@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         if (token) {
             try {
                 const decoded = jwtDecode(token);
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = (token) => {
-        localStorage.setItem('token', token);
+        sessionStorage.setItem('token', token);
         const decoded = jwtDecode(token);
 
         console.log("Token Decoded on Login:", decoded);
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
-        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
         setUser(null);
     };
 

@@ -11,7 +11,7 @@ import PackageDetails from './pages/PackageDetails';
 
 const ProtectedRoute = ({ children }) => {
     const { user } = useContext(AuthContext);
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
 
     if (!token) {
         return <Navigate to="/login" replace />;

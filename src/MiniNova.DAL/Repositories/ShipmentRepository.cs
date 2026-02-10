@@ -1,0 +1,118 @@
+using Microsoft.EntityFrameworkCore;
+using MiniNova.DAL.Context;
+using MiniNova.DAL.Models;
+using MiniNova.DAL.Records;
+using MiniNova.DAL.Repositories.Interfaces;
+
+namespace MiniNova.DAL.Repositories;
+
+public class ShipmentRepository : IShipmentRepository
+{
+    private readonly NovaDbContext _dbContext;
+    
+    public ShipmentRepository(NovaDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+    
+    public async Task<Shipment?> GetByIdWithDetailsAsync(int shipmentId, CancellationToken cancellationToken)
+    {
+        var shipment = await _dbContext.Shipments
+            .Include(d => d.Destination)
+            .Include(d => d.Origin)
+            .Include(s => s.Shipper)
+            .Include(r => r.Consignee)
+            .Include(p => p.Trackings)
+            .ThenInclude(t => t.Operator).ThenInclude(o => o.Person)
+            .Include(p => p.Trackings)
+            .ThenInclude(t => t.Operator).ThenInclude(o => o.Occupation)
+            .Include(p => p.Size)
+            .Include(p => p.Trackings).ThenInclude(t => t.Status)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == shipmentId,  cancellationToken);
+
+        return shipment;
+    }
+
+    public async Task<Shipment?> GetByTrackNoAsync(string trackNo, CancellationToken cancellationToken)
+    {
+        var shipment = await _dbContext.Shipments
+            .Include(d => d.Destination)
+            .Include(d => d.Origin)
+            .Include(s => s.Shipper)
+            .Include(r => r.Consignee)
+            .Include(p => p.Trackings)
+            .ThenInclude(t => t.Operator).ThenInclude(o => o.Person)
+            .Include(p => p.Trackings)
+            .ThenInclude(t => t.Operator).ThenInclude(o => o.Occupation)
+            .Include(p => p.Size)
+            .Include(p => p.Trackings).ThenInclude(t => t.Status)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.TrackId == trackNo, cancellationToken);
+        
+        return shipment;
+    }
+
+    public async Task<PaginationResult<Shipment>> GetPagedAsync(int skip, int pageSize, CancellationToken cancellationToken)
+    {
+        var query = _dbContext.Shipments.AsNoTracking().AsQueryable();
+        
+        var totalCount = await query.CountAsync(cancellationToken);
+        
+        var items = await query
+            .Include(p => p.Shipper)
+            .Include(p => p.Consignee)
+            .Include(p => p.Origin)
+            .Include(p => p.Destination)
+            .Include(p => p.Trackings).ThenInclude(t => t.Status)
+            .OrderByDescending(p => p.Id)
+            .Skip(skip)
+            .Take(pageSize)
+            .AsSplitQuery()
+            .ToListAsync(cancellationToken);
+        
+        return new PaginationResult<Shipment>(items, totalCount);
+    }
+
+    public async Task<PaginationResult<Shipment>> GetByUserIdPagedAsync(int userId, int skip, int take, CancellationToken cancellationToken)
+    {
+        var query = _dbContext.Shipments
+            .AsNoTracking()
+            .Where(p => p.ShipperId == userId || p.ConsigneeId == userId);
+        
+        var totalCount = await query.CountAsync(cancellationToken);
+        
+        var items = await query
+            .Include(p => p.Shipper)
+            .Include(p => p.Consignee)
+            .Include(p => p.Destination)
+            .Include(p => p.Size)
+            .Include(p => p.Trackings).ThenInclude(t => t.Status)
+            .OrderByDescending(p => p.Id)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+           
+        return new PaginationResult<Shipment>(items, totalCount);
+    }
+
+    public async Task AddAsync(Shipment shipment, CancellationToken cancellationToken)
+    {
+        await _dbContext.Shipments.AddAsync(shipment, cancellationToken);
+    }
+
+    public void Update(Shipment shipment)
+    {
+        _dbContext.Shipments.Update(shipment);
+    }
+
+    public void Remove(Shipment shipment)
+    {
+        _dbContext.Shipments.Remove(shipment);
+    }
+
+    public async Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+}
