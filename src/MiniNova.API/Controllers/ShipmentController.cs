@@ -3,7 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniNova.BLL.DTO.Shipment;
-using MiniNova.BLL.Interfaces;
+using MiniNova.BLL.Services.Shipment;
 
 namespace MiniNova.API.Controllers
 {

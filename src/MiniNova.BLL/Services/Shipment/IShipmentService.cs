@@ -1,7 +1,7 @@
 using MiniNova.BLL.DTO.Shipment;
 using MiniNova.BLL.Pagination;
 
-namespace MiniNova.BLL.Interfaces;
+namespace MiniNova.BLL.Services.Shipment;
 
 public interface IShipmentService
 {

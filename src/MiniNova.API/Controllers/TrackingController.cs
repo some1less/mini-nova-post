@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniNova.BLL.DTO.Tracking;
-using MiniNova.BLL.Interfaces;
+using MiniNova.BLL.Services.Tracking;
 
 namespace MiniNova.API.Controllers
 {

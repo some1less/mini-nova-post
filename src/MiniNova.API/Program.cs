@@ -1,8 +1,5 @@
-using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,10 +7,12 @@ using MiniNova.API.Extensions;
 using MiniNova.API.Middleware;
 using MiniNova.BLL.Generators;
 using MiniNova.BLL.Helpers.Options;
-using MiniNova.BLL.Interfaces;
 using MiniNova.BLL.Security.Auth;
 using MiniNova.BLL.Security.Tokens;
-using MiniNova.BLL.Services;
+using MiniNova.BLL.Services.Operator;
+using MiniNova.BLL.Services.Person;
+using MiniNova.BLL.Services.Shipment;
+using MiniNova.BLL.Services.Tracking;
 using MiniNova.DAL.Context;
 using MiniNova.DAL.Models;
 using MiniNova.DAL.Repositories;
@@ -47,10 +46,14 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.MaxDepth = 64;
     });
 
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IStatusRepository, StatusRepository>();
+builder.Services.AddScoped<ITrackingRepository, TrackingRepository>();
 builder.Services.AddScoped<IShipmentRepository, ShipmentRepository>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<IPersonRepository, PersonRepository>();
 builder.Services.AddScoped<IOperatorRepository, OperatorRepository>();
+
 
 builder.Services.AddScoped<IPersonService, PersonService>();
 builder.Services.AddScoped<IOperatorService, OperatorService>();

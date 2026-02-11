@@ -1,6 +1,6 @@
 using MiniNova.BLL.DTO.Tracking;
 
-namespace MiniNova.BLL.Interfaces;
+namespace MiniNova.BLL.Services.Tracking;
 
 public interface ITrackingService
 {

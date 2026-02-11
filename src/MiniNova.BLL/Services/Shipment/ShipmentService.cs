@@ -1,15 +1,12 @@
-using Microsoft.EntityFrameworkCore;
 using MiniNova.BLL.DTO.People;
 using MiniNova.BLL.DTO.Shipment;
 using MiniNova.BLL.DTO.Tracking;
 using MiniNova.BLL.Generators;
-using MiniNova.BLL.Interfaces;
 using MiniNova.BLL.Pagination;
-using MiniNova.DAL.Context;
-using MiniNova.DAL.Models;
 using MiniNova.DAL.Repositories.Interfaces;
+using MiniNova.DAL.Models;
 
-namespace MiniNova.BLL.Services;
+namespace MiniNova.BLL.Services.Shipment;
 
 public class ShipmentService : IShipmentService
 {
@@ -139,7 +136,7 @@ public class ShipmentService : IShipmentService
             _trackingNumberGenerator.GenerateTrackingNumber(destination.Country, shipmentDto.SizeId,
                 shipmentDto.Weight);
 
-        var package = new Shipment()
+        var package = new DAL.Models.Shipment()
         {
             TrackId = generateTrackNo,
             ShipperId = sender.Id,
@@ -153,7 +150,7 @@ public class ShipmentService : IShipmentService
 
         await _shipmentRepository.AddAsync(package, cancellationToken);
 
-        var initialTracking = new Tracking()
+        var initialTracking = new DAL.Models.Tracking()
         {
             Shipment = package,
             StatusId = 1,

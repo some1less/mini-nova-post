@@ -1,6 +1,6 @@
 using MiniNova.BLL.DTO.Operator;
 
-namespace MiniNova.BLL.Interfaces;
+namespace MiniNova.BLL.Services.Operator;
 
 public interface IOperatorService
 {

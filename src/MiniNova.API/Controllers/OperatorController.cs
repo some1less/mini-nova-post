@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MiniNova.BLL.Interfaces;
+using MiniNova.BLL.Services.Operator;
 
 namespace MiniNova.API.Controllers
 {

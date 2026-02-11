@@ -1,7 +1,7 @@
 using MiniNova.BLL.DTO.People;
 using MiniNova.BLL.Pagination;
 
-namespace MiniNova.BLL.Interfaces;
+namespace MiniNova.BLL.Services.Person;
 
 public interface IPersonService
 {

@@ -1,12 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using MiniNova.BLL.DTO.People;
-using MiniNova.BLL.Interfaces;
 using MiniNova.BLL.Pagination;
-using MiniNova.DAL.Context;
 using MiniNova.DAL.Models;
 using MiniNova.DAL.Repositories.Interfaces;
 
-namespace MiniNova.BLL.Services;
+namespace MiniNova.BLL.Services.Person;
 
 public class PersonService : IPersonService
 {
@@ -64,7 +62,7 @@ public class PersonService : IPersonService
         
         string? phoneNumber = string.IsNullOrWhiteSpace(personDto.Phone) ? null : personDto.Phone;
         
-        var person = new Person()
+        var person = new DAL.Models.Person()
         {
             FirstName = personDto.FirstName,
             LastName = personDto.LastName,

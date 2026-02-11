@@ -1,11 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using MiniNova.BLL.DTO.Tracking;
-using MiniNova.BLL.Interfaces;
-using MiniNova.DAL.Context;
-using MiniNova.DAL.Models;
 using MiniNova.DAL.Repositories.Interfaces;
 
-namespace MiniNova.BLL.Services;
+namespace MiniNova.BLL.Services.Tracking;
 
 public class TrackingService : ITrackingService
 {
@@ -62,7 +58,7 @@ public class TrackingService : ITrackingService
         var oper = await _operatorRepository.GetByPersonIdAsync(account.PersonId, cancellationToken);
         if (oper == null) throw new UnauthorizedAccessException("Current user is not an Operator");
         
-        var tracking = new Tracking
+        var tracking = new DAL.Models.Tracking
         {
             ShipmentId = trackingDto.PackageId,
             OperatorId = oper.Id,

@@ -1,10 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using MiniNova.BLL.DTO.Operator;
-using MiniNova.BLL.Interfaces;
-using MiniNova.DAL.Context;
 using MiniNova.DAL.Repositories.Interfaces;
 
-namespace MiniNova.BLL.Services;
+namespace MiniNova.BLL.Services.Operator;
 
 public class OperatorService : IOperatorService
 {

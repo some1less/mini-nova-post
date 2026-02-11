@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiniNova.BLL.DTO.People;
-using MiniNova.BLL.Interfaces;
+using MiniNova.BLL.Services.Person;
 using MiniNova.DAL.Context;
 using MiniNova.DAL.Models;
 
