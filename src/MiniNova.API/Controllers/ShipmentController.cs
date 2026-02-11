@@ -31,6 +31,7 @@ namespace MiniNova.API.Controllers
         public async Task<IActionResult> GetShipment([FromRoute] int id, CancellationToken cancellationToken)
         {
             var shipment = await _shipmentService.GetShipmentByIdAsync(id, cancellationToken);
+            if (shipment == null) return NotFound();
             return Ok(shipment);
         }
         
@@ -50,7 +51,7 @@ namespace MiniNova.API.Controllers
             var userId = int.Parse(userIdString!);
             
             var created = await _shipmentService.CreateShipmentAsync(shipmentDto, cancellationToken, userId);    
-            return CreatedAtAction(nameof(GetShipment), new { id = created.Id }, created);
+            return CreatedAtAction(nameof(GetShipment), new { id = created!.Id }, created);
         }
 
         [HttpPut("{id}")]

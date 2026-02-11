@@ -11,9 +11,9 @@ public class LocationRepository : ILocationRepository
         _dbContext = dbContext;
     }
     
-    public async Task<Models.Location?> GetByIdAsync(int locationId, CancellationToken cancellationToken)
+    public async Task<Models.Location?> GetByIdAsync(int locationId, CancellationToken ct)
     {
-        var location = await _dbContext.Locations.FirstOrDefaultAsync(l => l.Id == locationId, cancellationToken);
+        var location = await _dbContext.Locations.FirstOrDefaultAsync(l => l.Id == locationId, ct);
         return location;
     }
 }

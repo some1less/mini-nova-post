@@ -9,8 +9,7 @@ public interface ITrackingRepository
     Task<Models.Tracking?> GetByIdReadOnlyAsync(int trackingId, CancellationToken cancellationToken);
     
     Task AddAsync(Models.Tracking tracking, CancellationToken cancellationToken);
-    void Update(Models.Tracking tracking);
-    void Delete(Models.Tracking tracking);
-    Task SaveChangesAsync(CancellationToken cancellationToken);
+    Task Update(Models.Tracking tracking, CancellationToken cancellationToken);
+    Task Delete(Models.Tracking tracking, CancellationToken cancellationToken);
 
 }

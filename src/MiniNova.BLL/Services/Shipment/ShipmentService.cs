@@ -2,6 +2,7 @@ using MiniNova.BLL.DTO.People;
 using MiniNova.BLL.DTO.Shipment;
 using MiniNova.BLL.DTO.Tracking;
 using MiniNova.BLL.Generators;
+using MiniNova.BLL.Mappers;
 using MiniNova.BLL.Pagination;
 using MiniNova.DAL.Repositories.Location;
 using MiniNova.DAL.Repositories.Person;
@@ -29,34 +30,11 @@ public class ShipmentService : IShipmentService
         int pageSize = 10)
     {
         var skip = (page - 1) * pageSize;
-
         var result = await _shipmentRepository.GetPagedAsync(skip, pageSize, cancellationToken);
 
-        var dtos = result.Items.Select(p => new ShipmentAllDTO
-        {
-            Id = p.Id,
-            TrackingNo = p.TrackId,
-            Description = p.Description,
-            Sender = new PersonAllShipmentsDTO()
-            {
-                FullName = $"{p.Shipper.FirstName} {p.Shipper.LastName}",
-                Email = $"{p.Shipper.Email}",
-                Phone = $"{p.Shipper.Phone}",
-            },
-            Receiver = new PersonAllShipmentsDTO()
-            {
-                FullName = $"{p.Consignee.FirstName} {p.Consignee.LastName}",
-                Email = $"{p.Consignee.Email}",
-                Phone = $"{p.Consignee.Phone}",
-            },
-            DestinationAddress =
-                $"{p.Destination.Address} [{p.Destination.Postcode}], {p.Destination.City}, {p.Destination.Country}",
-            OriginAddress = $"{p.Origin.Address} [{p.Origin.Postcode}], {p.Origin.City}, {p.Origin.Country}",
-            Status = p.Trackings
-                .OrderByDescending(t => t.UpdateTime)
-                .Select(t => t.Status.Name)
-                .FirstOrDefault() ?? "null",
-        }).ToList();
+        var dtos = result.Items
+            .Select(p => p.ToAllDto())
+            .ToList();
 
         return new PagedResponse<ShipmentAllDTO>
         {
@@ -67,53 +45,13 @@ public class ShipmentService : IShipmentService
         };
     }
 
-    public async Task<ShipmentByIdDTO> GetShipmentByIdAsync(int shipmentId, CancellationToken cancellationToken)
+    public async Task<ShipmentByIdDTO?> GetShipmentByIdAsync(int shipmentId, CancellationToken cancellationToken)
     {
         var shipment = await _shipmentRepository.GetByIdWithDetailsAsync(shipmentId, cancellationToken);
-        if (shipment == null) throw new KeyNotFoundException($"Shipment with id {shipment} not found");
-
-        var sortedHistory = shipment.Trackings.OrderByDescending(t => t.UpdateTime).ToList();
-        var lastStatus = sortedHistory.FirstOrDefault()?.Status?.Name ?? "Registered";
-
-        return new ShipmentByIdDTO()
-        {
-            Id = shipment.Id,
-            TrackingNo = shipment.TrackId,
-            Shipper = new PersonResponseDTO()
-            {
-                Id = shipment.Shipper.Id,
-                FullName = $"{shipment.Shipper.FirstName} {shipment.Shipper.LastName}",
-                Email = shipment.Shipper.Email,
-                Phone = shipment.Shipper.Phone,
-            },
-            Consignee = new PersonResponseDTO()
-            {
-                Id = shipment.Consignee.Id,
-                FullName = $"{shipment.Consignee.FirstName} {shipment.Consignee.LastName}",
-                Email = shipment.Consignee.Email,
-                Phone = shipment.Consignee.Phone,
-            },
-            Description = shipment.Description,
-            Size = shipment.Size.Name,
-            Weight = shipment.Weight,
-
-            DestinationAddress = $"{shipment.Destination.Address}, {shipment.Destination.City}",
-
-            Status = lastStatus,
-            History = sortedHistory.Select(t => new TrackingResponseDTO
-            {
-                Id = t.Id,
-                Status = t.Status?.Name ?? "Unknown",
-                UpdateTime = t.UpdateTime.ToString("yyyy-MM-dd HH:mm"),
-                OperatorName = t.Operator != null
-                    ? $"{t.Operator.Person.FirstName} {t.Operator.Person.LastName}"
-                    : "System",
-                OperatorRole = t.Operator?.Occupation.Name ?? "Auto"
-            })
-        };
+        return shipment?.ToDetailedDto();
     }
 
-    public async Task<ShipmentByIdDTO> CreateShipmentAsync(CreateShipmentDTO shipmentDto,
+    public async Task<ShipmentByIdDTO?> CreateShipmentAsync(CreateShipmentDTO shipmentDto,
         CancellationToken cancellationToken, int senderId)
     {
         var sender = await _personRepository.GetByIdAsync(senderId, cancellationToken);
@@ -133,35 +71,20 @@ public class ShipmentService : IShipmentService
             throw new ArgumentException("You can't send a package to yourself :)");
         }
 
-        string generateTrackNo =
+        string trackNo =
             _trackingNumberGenerator.GenerateTrackingNumber(destination.Country, shipmentDto.SizeId,
                 shipmentDto.Weight);
 
-        var package = new DAL.Models.Shipment()
+        var package = shipmentDto.ToEntity(trackNo, sender.Id, receiver.Id);
+        
+        package.Trackings.Add(new DAL.Models.Tracking
         {
-            TrackId = generateTrackNo,
-            ShipperId = sender.Id,
-            ConsigneeId = receiver.Id,
-            DestinationId = shipmentDto.DestinationId,
-            OriginId = shipmentDto.OriginId,
-            Description = shipmentDto.Description,
-            Weight = shipmentDto.Weight,
-            SizeId = shipmentDto.SizeId,
-        };
-
+            StatusId = 1, // Registered
+            OperatorId = 1, // System
+            UpdateTime = DateTime.UtcNow
+        });
+        
         await _shipmentRepository.AddAsync(package, cancellationToken);
-
-        var initialTracking = new DAL.Models.Tracking()
-        {
-            Shipment = package,
-            StatusId = 1,
-            UpdateTime = DateTime.UtcNow,
-            OperatorId = 1
-        };
-
-        package.Trackings.Add(initialTracking);
-
-        await _shipmentRepository.SaveChangesAsync(cancellationToken);
         return await GetShipmentByIdAsync(package.Id, cancellationToken);
     }
 
@@ -176,13 +99,9 @@ public class ShipmentService : IShipmentService
         if (destination == null)
             throw new KeyNotFoundException($"Destination with id {shipmentDto.DestinationId} not found");
 
-        shipment.Description = shipmentDto.Description;
-        shipment.SizeId = shipmentDto.SizeId;
-        shipment.Weight = shipmentDto.Weight;
-        shipment.DestinationId = shipmentDto.DestinationId;
-
-        _shipmentRepository.Update(shipment);
-        await _shipmentRepository.SaveChangesAsync(cancellationToken);
+        shipment.MapUpdate(shipmentDto);
+        
+        await _shipmentRepository.Update(shipment, cancellationToken);
     }
 
     public async Task DeleteShipmentAsync(int shipmentId, CancellationToken cancellationToken)
@@ -191,55 +110,20 @@ public class ShipmentService : IShipmentService
         if (shipment == null)
             throw new KeyNotFoundException($"Shipment with id {shipmentId} not found");
 
-        _shipmentRepository.Remove(shipment);
-        await _shipmentRepository.SaveChangesAsync(cancellationToken);
+        await _shipmentRepository.Remove(shipment, cancellationToken);
     }
 
     public async Task<PagedResponse<ShipmentByIdDTO>> GetUserShipmentsAsync(int userId,
         CancellationToken cancellationToken, int page, int pageSize)
     {
         var skip = (page - 1) * pageSize;
+        var data = await _shipmentRepository
+            .GetByUserIdPagedAsync(userId, skip, pageSize, cancellationToken);
 
-        var data = await _shipmentRepository.GetByUserIdPagedAsync(userId, skip, pageSize, cancellationToken);
-
-        var dtos = data.Items.Select(p =>
-        {
-            var lastStatus = p.Trackings
-                .OrderByDescending(t => t.UpdateTime)
-                .Select(t => t.Status.Name)
-                .FirstOrDefault() ?? "Unknown";
-
-            return new ShipmentByIdDTO
-            {
-                Id = p.Id,
-                TrackingNo = p.TrackId,
-                Description = p.Description,
-                Size = p.Size.Name,
-                Weight = p.Weight,
-
-                DestinationAddress = $"{p.Destination.Address}, {p.Destination.City}",
-
-                Shipper = new PersonResponseDTO
-                {
-                    Id = p.Shipper.Id,
-                    FullName = $"{p.Shipper.FirstName} {p.Shipper.LastName}",
-                    Email = p.Shipper.Email,
-                    Phone = p.Shipper.Phone
-                },
-
-                Consignee = new PersonResponseDTO
-                {
-                    Id = p.Consignee.Id,
-                    FullName = $"{p.Consignee.FirstName} {p.Consignee.LastName}",
-                    Email = p.Consignee.Email,
-                    Phone = p.Consignee.Phone
-                },
-
-                Status = lastStatus
-            };
-        }).ToList();
-
-
+        var dtos = data.Items
+            .Select(p => p.ToLessDetailedDto())
+            .ToList();
+        
         return new PagedResponse<ShipmentByIdDTO>
         {
             Items = dtos,
@@ -262,48 +146,6 @@ public class ShipmentService : IShipmentService
         if (shipment == null)
             throw new KeyNotFoundException($"Shipment with tracking number '{trackingNumber}' not found");
 
-        var sortedHistory = shipment.Trackings.OrderByDescending(t => t.UpdateTime).ToList();
-
-        var lastStatus = shipment.Trackings
-            .OrderByDescending(t => t.UpdateTime)
-            .Select(t => t.Status.Name)
-            .FirstOrDefault() ?? "null";
-
-        return new ShipmentByIdDTO()
-        {
-            Id = shipment.Id,
-            TrackingNo = shipment.TrackId,
-            Shipper = new PersonResponseDTO()
-            {
-                Id = shipment.Shipper.Id,
-                FullName = $"{shipment.Shipper.FirstName} {shipment.Shipper.LastName}",
-                Email = shipment.Shipper.Email,
-                Phone = shipment.Shipper.Phone,
-            },
-            Consignee = new PersonResponseDTO()
-            {
-                Id = shipment.Consignee.Id,
-                FullName = $"{shipment.Consignee.FirstName} {shipment.Consignee.LastName}",
-                Email = shipment.Consignee.Email,
-                Phone = shipment.Consignee.Phone,
-            },
-            Description = shipment.Description,
-            Size = shipment.Size.Name,
-            Weight = shipment.Weight,
-
-            DestinationAddress = $"{shipment.Destination.Address}, {shipment.Destination.City}",
-
-            Status = lastStatus,
-            History = sortedHistory.Select(t => new TrackingResponseDTO
-            {
-                Id = t.Id,
-                Status = t.Status?.Name ?? "Unknown",
-                UpdateTime = t.UpdateTime.ToString("yyyy-MM-dd HH:mm"),
-                OperatorName = t.Operator != null
-                    ? $"{t.Operator.Person.FirstName} {t.Operator.Person.LastName}"
-                    : "System",
-                OperatorRole = t.Operator?.Occupation.Name ?? "Auto"
-            })
-        };
+        return shipment.ToDetailedDto();
     }
 }

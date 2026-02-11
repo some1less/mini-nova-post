@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MiniNova.BLL.DTO.People;
+using MiniNova.BLL.Mappers;
 using MiniNova.BLL.Pagination;
 using MiniNova.DAL.Models;
 using MiniNova.DAL.Repositories.Person;
@@ -16,18 +17,13 @@ public class PersonService : IPersonService
         _personRepository = personRepository;
     }
     
-    public async Task<PagedResponse<PersonAllDTO>> GetAllAsync(CancellationToken cancellationToken, int page = 1, int pageSize = 10)
+    public async Task<PagedResponse<PersonAllDTO>> GetAllAsync(CancellationToken ct, int page = 1, int pageSize = 10)
     {
         var skip = (page - 1) * pageSize;
-        
-        var result = await _personRepository.GetPagedAsync(skip, pageSize, cancellationToken);
+        var result = await _personRepository.GetPagedAsync(skip, pageSize, ct);
         
         var dtos = result.Items
-            .Select(p => new PersonAllDTO
-            {
-                Id = p.Id,
-                FullName = $"{p.FirstName} {p.LastName}",
-            })
+            .Select(p => p.ToAllDto())
             .ToList();
 
         return new PagedResponse<PersonAllDTO>
@@ -42,43 +38,15 @@ public class PersonService : IPersonService
     public async Task<PersonResponseDTO?> GetPersonByIdAsync(int id, CancellationToken cancellationToken)
     {
         var person = await _personRepository.GetByIdAsync(id, cancellationToken);
-
-        if (person == null)
-        {
-            return null;
-        }
-
-        return new PersonResponseDTO()
-        {
-            Id = person.Id, 
-            FullName = $"{person.FirstName} {person.LastName}",
-            Email = person.Email,
-            Phone = person.Phone
-        };
+        return person?.ToResponseDto();
     }
 
     public async Task<PersonResponseDTO> CreatePersonAsync(PersonDTO personDto, CancellationToken cancellationToken)
     {
-        
-        string? phoneNumber = string.IsNullOrWhiteSpace(personDto.Phone) ? null : personDto.Phone;
-        
-        var person = new DAL.Models.Person()
-        {
-            FirstName = personDto.FirstName,
-            LastName = personDto.LastName,
-            Email = personDto.Email,
-            Phone = phoneNumber
-        };
+        var person = personDto.ToEntity();
         
         await _personRepository.AddAsync(person, cancellationToken);
-
-        return new PersonResponseDTO()
-        {
-            Id = person.Id,
-            FullName = $"{person.FirstName} {person.LastName}",
-            Email = person.Email,
-            Phone = person.Phone
-        };
+        return person.ToResponseDto();
     }
 
     public async Task UpdatePersonAsync(PersonDTO updatePerson, int personId, CancellationToken cancellationToken)
@@ -86,11 +54,7 @@ public class PersonService : IPersonService
         var person = await _personRepository.GetByIdAsync(personId, cancellationToken);
         if (person == null) throw new KeyNotFoundException($"Person with id {personId} not found");
 
-        person.FirstName = updatePerson.FirstName;
-        person.LastName = updatePerson.LastName;
-        person.Email = updatePerson.Email;
-        person.Phone = string.IsNullOrWhiteSpace(updatePerson.Phone) ? null : updatePerson.Phone;
-        
+        person.MapUpdate(updatePerson);
         await _personRepository.Update(person, cancellationToken);
 
     }

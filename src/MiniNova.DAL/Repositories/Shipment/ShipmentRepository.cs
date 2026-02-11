@@ -27,6 +27,7 @@ public class ShipmentRepository : IShipmentRepository
             .Include(p => p.Size)
             .Include(p => p.Trackings).ThenInclude(t => t.Status)
             .AsNoTracking()
+            .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.Id == shipmentId,  cancellationToken);
 
         return shipment;
@@ -46,6 +47,7 @@ public class ShipmentRepository : IShipmentRepository
             .Include(p => p.Size)
             .Include(p => p.Trackings).ThenInclude(t => t.Status)
             .AsNoTracking()
+            .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.TrackId == trackNo, cancellationToken);
         
         return shipment;
@@ -91,6 +93,7 @@ public class ShipmentRepository : IShipmentRepository
             .OrderByDescending(p => p.Id)
             .Skip(skip)
             .Take(take)
+            .AsSplitQuery()
             .ToListAsync(cancellationToken);
            
         return new PaginationResult<Models.Shipment>(items, totalCount);
@@ -99,20 +102,18 @@ public class ShipmentRepository : IShipmentRepository
     public async Task AddAsync(Models.Shipment shipment, CancellationToken cancellationToken)
     {
         await _dbContext.Shipments.AddAsync(shipment, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public void Update(Models.Shipment shipment)
+    public async Task Update(Models.Shipment shipment, CancellationToken cancellationToken)
     {
         _dbContext.Shipments.Update(shipment);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public void Remove(Models.Shipment shipment)
+    public async Task Remove(Models.Shipment shipment, CancellationToken cancellationToken)
     {
         _dbContext.Shipments.Remove(shipment);
-    }
-
-    public async Task SaveChangesAsync(CancellationToken cancellationToken)
-    {
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
     

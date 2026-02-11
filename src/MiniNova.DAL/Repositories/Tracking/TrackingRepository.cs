@@ -23,6 +23,7 @@ public class TrackingRepository : ITrackingRepository
             .Include(t => t.Operator)
             .ThenInclude(o => o!.Occupation)
             .OrderByDescending(t => t.UpdateTime)
+            .AsSplitQuery()
             .ToListAsync(cancellationToken);
         
         return history;
@@ -48,20 +49,18 @@ public class TrackingRepository : ITrackingRepository
     public async Task AddAsync(Models.Tracking tracking, CancellationToken cancellationToken)
     {
         await _dbContext.Trackings.AddAsync(tracking, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public void Update(Models.Tracking tracking)
+    public async Task Update(Models.Tracking tracking, CancellationToken cancellationToken)
     {
         _dbContext.Trackings.Update(tracking);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public void Delete(Models.Tracking tracking)
+    public async Task Delete(Models.Tracking tracking, CancellationToken cancellationToken)
     {
         _dbContext.Trackings.Remove(tracking);
-    }
-
-    public async Task SaveChangesAsync(CancellationToken cancellationToken)
-    {
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

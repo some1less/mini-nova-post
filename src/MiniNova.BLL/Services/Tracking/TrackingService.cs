@@ -1,4 +1,5 @@
 using MiniNova.BLL.DTO.Tracking;
+using MiniNova.BLL.Mappers;
 using MiniNova.DAL.Repositories.Account;
 using MiniNova.DAL.Repositories.Operator;
 using MiniNova.DAL.Repositories.Shipment;
@@ -28,23 +29,14 @@ public class TrackingService : ITrackingService
     }
 
 
-    public async Task<IEnumerable<TrackingResponseDTO>> GetHistoryByPackageIdAsync(int shipmentId, CancellationToken cancellationToken)
+    public async Task<IEnumerable<TrackingResponseDTO>> GetHistoryByPackageIdAsync(int shipmentId, CancellationToken ct)
     {
-        var shipment = await _shipmentRepository.ExistsAsync(shipmentId, cancellationToken);
+        var shipment = await _shipmentRepository.ExistsAsync(shipmentId, ct);
         if (!shipment) throw new KeyNotFoundException($"Shipment with id {shipmentId} not found");
 
-        var history = await _trackingRepository.GetAllAsync(shipmentId, cancellationToken);
+        var history = await _trackingRepository.GetAllAsync(shipmentId, ct);
 
-        return history.Select(t => new TrackingResponseDTO()
-        {
-            Id = t.Id,
-            Status = t.Status?.Name ?? "Unknown",
-            UpdateTime = t.UpdateTime.ToString("yyyy-MM-dd HH:mm:ss"),
-            OperatorName = t.Operator != null
-                ? $"{t.Operator.Person.FirstName} {t.Operator.Person.LastName}"
-                : "System Auto-Update",
-            OperatorRole = t.Operator?.Occupation.Name ?? "System"
-        });
+        return history.Select(t => t.ToDto());
     }
 
     public async Task<TrackingResponseDTO> AddTrackingAsync(TrackingDTO trackingDto, string operatorLogin,
@@ -62,39 +54,25 @@ public class TrackingService : ITrackingService
         var oper = await _operatorRepository.GetByPersonIdAsync(account.PersonId, cancellationToken);
         if (oper == null) throw new UnauthorizedAccessException("Current user is not an Operator");
         
-        var tracking = new DAL.Models.Tracking
-        {
-            ShipmentId = trackingDto.PackageId,
-            OperatorId = oper.Id,
-            StatusId = trackingDto.StatusId,
-            UpdateTime = DateTime.UtcNow,
-        };
-        
+        var tracking = trackingDto.ToEntity(oper.Id);
         await  _trackingRepository.AddAsync(tracking, cancellationToken);
-        await _trackingRepository.SaveChangesAsync(cancellationToken);
         
-        return new TrackingResponseDTO
-        {
-            Id = tracking.Id,
-            Status = statusEntity.Name,
-            UpdateTime = tracking.UpdateTime.ToString("yyyy-MM-dd HH:mm:ss"),
-            OperatorName = $"{oper.Person.FirstName} {oper.Person.LastName}",
-            OperatorRole = oper.Occupation.Name
-        };
+        tracking.Status = statusEntity;
+        tracking.Operator = oper;
+        return tracking.ToDto();
     }
 
-    public async Task UpdateTrackingAsync(int trackingId, UpdateTrackingDTO trackingDto, CancellationToken cancellationToken)
+    public async Task UpdateTrackingAsync(int trackingId, UpdateTrackingDTO trackingDto, CancellationToken ct)
     {
-        var tracking = await _trackingRepository.GetByIdAsync(trackingId, cancellationToken);
+        var tracking = await _trackingRepository.GetByIdAsync(trackingId, ct);
         if (tracking == null) throw new KeyNotFoundException($"Tracking {trackingId} not found");
 
-        var statusExists = await _statusRepository.IfExistsAsync(trackingDto.StatusId,  cancellationToken);
+        var statusExists = await _statusRepository.IfExistsAsync(trackingDto.StatusId,  ct);
         if (!statusExists) throw new KeyNotFoundException($"Status ID {trackingDto.StatusId} not found");
 
-        tracking.StatusId = trackingDto.StatusId;
+        tracking.MapUpdate(trackingDto);
         
-        _trackingRepository.Update(tracking);
-        await _trackingRepository.SaveChangesAsync(cancellationToken);
+        await _trackingRepository.Update(tracking, ct);
     }
 
     public async Task DeleteTrackingAsync(int trackingId, CancellationToken cancellationToken)
@@ -104,7 +82,6 @@ public class TrackingService : ITrackingService
         if (tracking == null) 
             throw new KeyNotFoundException($"Tracking record with id {trackingId} not found");
 
-        _trackingRepository.Delete(tracking);
-        await _trackingRepository.SaveChangesAsync(cancellationToken); 
+        await _trackingRepository.Delete(tracking, cancellationToken);
     }
 }

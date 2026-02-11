@@ -13,10 +13,9 @@ public interface IShipmentRepository
     Task<PaginationResult<Models.Shipment>> GetByUserIdPagedAsync(int userId, int skip, int take, CancellationToken cancellationToken);
     
     Task AddAsync(Models.Shipment shipment, CancellationToken cancellationToken);
-    void Update(Models.Shipment shipment);
-    void Remove(Models.Shipment shipment);
+    Task Update(Models.Shipment shipment, CancellationToken cancellationToken);
+    Task Remove(Models.Shipment shipment, CancellationToken cancellationToken);
     
-    Task SaveChangesAsync(CancellationToken cancellationToken);
 
     Task<bool> ExistsAsync(int id, CancellationToken token);
 }
