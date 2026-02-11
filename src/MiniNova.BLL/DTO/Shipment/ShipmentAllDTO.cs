@@ -1,6 +1,6 @@
 using MiniNova.BLL.DTO.People;
 
-namespace MiniNova.BLL.DTO.Package;
+namespace MiniNova.BLL.DTO.Shipment;
 
 public class ShipmentAllDTO
 {

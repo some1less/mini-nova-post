@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using MiniNova.BLL.DTO.Package;
 using MiniNova.BLL.DTO.People;
+using MiniNova.BLL.DTO.Shipment;
 using MiniNova.BLL.DTO.Tracking;
 using MiniNova.BLL.Generators;
 using MiniNova.BLL.Interfaces;
@@ -18,18 +18,20 @@ public class ShipmentService : IShipmentService
     private readonly ILocationRepository _locationRepository;
     private readonly ITrackingNumberGeneratorService _trackingNumberGenerator;
 
-    public ShipmentService(IShipmentRepository shipmentRepository, IPersonRepository personRepository, ILocationRepository locationRepository, ITrackingNumberGeneratorService trackingNumberGenerator)
+    public ShipmentService(IShipmentRepository shipmentRepository, IPersonRepository personRepository,
+        ILocationRepository locationRepository, ITrackingNumberGeneratorService trackingNumberGenerator)
     {
         _shipmentRepository = shipmentRepository;
         _personRepository = personRepository;
         _locationRepository = locationRepository;
         _trackingNumberGenerator = trackingNumberGenerator;
     }
-    
-    public async Task<PagedResponse<ShipmentAllDTO>> GetAllAsync(CancellationToken cancellationToken, int page, int pageSize = 10)
+
+    public async Task<PagedResponse<ShipmentAllDTO>> GetAllAsync(CancellationToken cancellationToken, int page,
+        int pageSize = 10)
     {
         var skip = (page - 1) * pageSize;
-        
+
         var result = await _shipmentRepository.GetPagedAsync(skip, pageSize, cancellationToken);
 
         var dtos = result.Items.Select(p => new ShipmentAllDTO
@@ -70,11 +72,11 @@ public class ShipmentService : IShipmentService
     public async Task<ShipmentByIdDTO> GetShipmentByIdAsync(int shipmentId, CancellationToken cancellationToken)
     {
         var shipment = await _shipmentRepository.GetByIdWithDetailsAsync(shipmentId, cancellationToken);
-        if (shipment == null) throw new KeyNotFoundException($"Package with id {shipment} not found");
-        
+        if (shipment == null) throw new KeyNotFoundException($"Shipment with id {shipment} not found");
+
         var sortedHistory = shipment.Trackings.OrderByDescending(t => t.UpdateTime).ToList();
         var lastStatus = sortedHistory.FirstOrDefault()?.Status?.Name ?? "Registered";
-        
+
         return new ShipmentByIdDTO()
         {
             Id = shipment.Id,
@@ -98,57 +100,59 @@ public class ShipmentService : IShipmentService
             Weight = shipment.Weight,
 
             DestinationAddress = $"{shipment.Destination.Address}, {shipment.Destination.City}",
-            
+
             Status = lastStatus,
             History = sortedHistory.Select(t => new TrackingResponseDTO
             {
                 Id = t.Id,
                 Status = t.Status?.Name ?? "Unknown",
                 UpdateTime = t.UpdateTime.ToString("yyyy-MM-dd HH:mm"),
-                OperatorName = t.Operator != null 
-                    ? $"{t.Operator.Person.FirstName} {t.Operator.Person.LastName}" 
+                OperatorName = t.Operator != null
+                    ? $"{t.Operator.Person.FirstName} {t.Operator.Person.LastName}"
                     : "System",
                 OperatorRole = t.Operator?.Occupation.Name ?? "Auto"
             })
         };
     }
 
-    public async Task<ShipmentByIdDTO> CreateShipmentAsync(CreateShipmentDTO packageDto, CancellationToken cancellationToken, int senderId)
+    public async Task<ShipmentByIdDTO> CreateShipmentAsync(CreateShipmentDTO shipmentDto,
+        CancellationToken cancellationToken, int senderId)
     {
-        
         var sender = await _personRepository.GetByIdAsync(senderId, cancellationToken);
-        if (sender == null) 
+        if (sender == null)
             throw new KeyNotFoundException("Hmmm... Sender not found. Please re-login");
-    
-        var receiver = await _personRepository.GetByEmailAsync(packageDto.ConsigneeEmail, cancellationToken);
+
+        var receiver = await _personRepository.GetByEmailAsync(shipmentDto.ConsigneeEmail, cancellationToken);
         if (receiver == null)
-            throw new KeyNotFoundException($"Receiver with email {packageDto.ConsigneeEmail} not found");
-    
-        var destination = await _locationRepository.GetByIdAsync(packageDto.DestinationId, cancellationToken);
+            throw new KeyNotFoundException($"Receiver with email {shipmentDto.ConsigneeEmail} not found");
+
+        var destination = await _locationRepository.GetByIdAsync(shipmentDto.DestinationId, cancellationToken);
         if (destination == null)
-            throw new KeyNotFoundException($"Destination with id {packageDto.DestinationId} not found");
-        
+            throw new KeyNotFoundException($"Destination with id {shipmentDto.DestinationId} not found");
+
         if (sender.Id == receiver.Id)
         {
             throw new ArgumentException("You can't send a package to yourself :)");
         }
-        
-        string generateTrackNo = _trackingNumberGenerator.GenerateTrackingNumber(destination.Country, packageDto.SizeId, packageDto.Weight);
-        
+
+        string generateTrackNo =
+            _trackingNumberGenerator.GenerateTrackingNumber(destination.Country, shipmentDto.SizeId,
+                shipmentDto.Weight);
+
         var package = new Shipment()
         {
             TrackId = generateTrackNo,
             ShipperId = sender.Id,
             ConsigneeId = receiver.Id,
-            DestinationId = packageDto.DestinationId,
-            OriginId =  packageDto.OriginId,
-            Description = packageDto.Description,
-            Weight = packageDto.Weight,
-            SizeId = packageDto.SizeId,
+            DestinationId = shipmentDto.DestinationId,
+            OriginId = shipmentDto.OriginId,
+            Description = shipmentDto.Description,
+            Weight = shipmentDto.Weight,
+            SizeId = shipmentDto.SizeId,
         };
-    
+
         await _shipmentRepository.AddAsync(package, cancellationToken);
-        
+
         var initialTracking = new Tracking()
         {
             Shipment = package,
@@ -156,48 +160,49 @@ public class ShipmentService : IShipmentService
             UpdateTime = DateTime.UtcNow,
             OperatorId = 1
         };
-        
+
         package.Trackings.Add(initialTracking);
-        
-        await _shipmentRepository.SaveChangesAsync(cancellationToken);    
+
+        await _shipmentRepository.SaveChangesAsync(cancellationToken);
         return await GetShipmentByIdAsync(package.Id, cancellationToken);
     }
 
-    public async Task UpdateShipmentAsync(UpdateShipmentDTO packageDto, int packageId, CancellationToken cancellationToken)
+    public async Task UpdateShipmentAsync(UpdateShipmentDTO shipmentDto, int shipmentId,
+        CancellationToken cancellationToken)
     {
-        
-        var package = await _shipmentRepository.GetByIdWithDetailsAsync(packageId, cancellationToken);
-        if (package == null) 
-            throw new KeyNotFoundException($"Package with id {packageId} not found");
+        var shipment = await _shipmentRepository.GetByIdWithDetailsAsync(shipmentId, cancellationToken);
+        if (shipment == null)
+            throw new KeyNotFoundException($"Shipment with id {shipmentId} not found");
 
-        var destination = await _locationRepository.GetByIdAsync(packageDto.DestinationId, cancellationToken);
+        var destination = await _locationRepository.GetByIdAsync(shipmentDto.DestinationId, cancellationToken);
         if (destination == null)
-            throw new KeyNotFoundException($"Destination with id {packageDto.DestinationId} not found");
-        
-        package.Description = packageDto.Description;
-        package.SizeId = packageDto.SizeId;
-        package.Weight = packageDto.Weight;
-        package.DestinationId = packageDto.DestinationId;
-        
-        _shipmentRepository.Update(package);
+            throw new KeyNotFoundException($"Destination with id {shipmentDto.DestinationId} not found");
+
+        shipment.Description = shipmentDto.Description;
+        shipment.SizeId = shipmentDto.SizeId;
+        shipment.Weight = shipmentDto.Weight;
+        shipment.DestinationId = shipmentDto.DestinationId;
+
+        _shipmentRepository.Update(shipment);
         await _shipmentRepository.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task DeleteShipmentAsync(int packageId, CancellationToken cancellationToken)
+    public async Task DeleteShipmentAsync(int shipmentId, CancellationToken cancellationToken)
     {
-        var  package = await _shipmentRepository.GetByIdWithDetailsAsync(packageId, cancellationToken);
-        if (package == null)
-            throw new KeyNotFoundException($"Package with id {packageId} not found");
-        
-        _shipmentRepository.Remove(package);
+        var shipment = await _shipmentRepository.GetByIdWithDetailsAsync(shipmentId, cancellationToken);
+        if (shipment == null)
+            throw new KeyNotFoundException($"Shipment with id {shipmentId} not found");
+
+        _shipmentRepository.Remove(shipment);
         await _shipmentRepository.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<PagedResponse<ShipmentByIdDTO>> GetUserShipmentsAsync(int userId, CancellationToken cancellationToken,  int page, int pageSize)
+    public async Task<PagedResponse<ShipmentByIdDTO>> GetUserShipmentsAsync(int userId,
+        CancellationToken cancellationToken, int page, int pageSize)
     {
         var skip = (page - 1) * pageSize;
-        
-        var data = await _shipmentRepository.GetByUserIdPagedAsync(userId, skip, pageSize,  cancellationToken);
+
+        var data = await _shipmentRepository.GetByUserIdPagedAsync(userId, skip, pageSize, cancellationToken);
 
         var dtos = data.Items.Select(p =>
         {
@@ -235,8 +240,8 @@ public class ShipmentService : IShipmentService
                 Status = lastStatus
             };
         }).ToList();
-        
-        
+
+
         return new PagedResponse<ShipmentByIdDTO>
         {
             Items = dtos,
@@ -252,11 +257,11 @@ public class ShipmentService : IShipmentService
         {
             throw new ArgumentException("Invalid tracking number format or checksum.");
         }
-        
+
         var cleanTrackNo = trackingNumber.Replace(" ", "").Replace("-", "").ToUpper();
-        
+
         var shipment = await _shipmentRepository.GetByTrackNoAsync(cleanTrackNo, ct);
-        if (shipment == null) 
+        if (shipment == null)
             throw new KeyNotFoundException($"Shipment with tracking number '{trackingNumber}' not found");
 
         var sortedHistory = shipment.Trackings.OrderByDescending(t => t.UpdateTime).ToList();
@@ -265,7 +270,7 @@ public class ShipmentService : IShipmentService
             .OrderByDescending(t => t.UpdateTime)
             .Select(t => t.Status.Name)
             .FirstOrDefault() ?? "null";
-        
+
         return new ShipmentByIdDTO()
         {
             Id = shipment.Id,
@@ -289,15 +294,15 @@ public class ShipmentService : IShipmentService
             Weight = shipment.Weight,
 
             DestinationAddress = $"{shipment.Destination.Address}, {shipment.Destination.City}",
-            
+
             Status = lastStatus,
             History = sortedHistory.Select(t => new TrackingResponseDTO
             {
                 Id = t.Id,
                 Status = t.Status?.Name ?? "Unknown",
                 UpdateTime = t.UpdateTime.ToString("yyyy-MM-dd HH:mm"),
-                OperatorName = t.Operator != null 
-                    ? $"{t.Operator.Person.FirstName} {t.Operator.Person.LastName}" 
+                OperatorName = t.Operator != null
+                    ? $"{t.Operator.Person.FirstName} {t.Operator.Person.LastName}"
                     : "System",
                 OperatorRole = t.Operator?.Occupation.Name ?? "Auto"
             })

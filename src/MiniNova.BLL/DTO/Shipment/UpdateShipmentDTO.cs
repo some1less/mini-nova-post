@@ -1,19 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MiniNova.BLL.DTO.Package;
+namespace MiniNova.BLL.DTO.Shipment;
 
-public class CreateShipmentDTO
+public class UpdateShipmentDTO
 {
-    
-    [Required]
-    [EmailAddress(ErrorMessage = "Invalid email address.")]
-    public required string ConsigneeEmail { get; set; }
-    
     [Required]
     [MinLength(5, ErrorMessage = "Description has to be longer than 5 characters.")]
     public required string Description { get; set; }
-
-    [Required]
     public int SizeId { get; set; }
     [Required]
     [Range(0.1, 40, ErrorMessage = "Weight has to be between 0.1 and 40 kg.")]
@@ -21,7 +14,4 @@ public class CreateShipmentDTO
     
     [Required]
     public int DestinationId { get; set; }
-    
-    [Required]
-    public int OriginId { get; set; }
 }

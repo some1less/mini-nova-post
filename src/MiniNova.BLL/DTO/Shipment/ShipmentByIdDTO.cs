@@ -1,7 +1,7 @@
 using MiniNova.BLL.DTO.People;
 using MiniNova.BLL.DTO.Tracking;
 
-namespace MiniNova.BLL.DTO.Package;
+namespace MiniNova.BLL.DTO.Shipment;
 
 public class ShipmentByIdDTO
 {

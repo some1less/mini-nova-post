@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MiniNova.BLL.DTO.Package;
+using MiniNova.BLL.DTO.Shipment;
 using MiniNova.BLL.Interfaces;
 
 namespace MiniNova.API.Controllers
@@ -30,8 +30,8 @@ namespace MiniNova.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetShipment([FromRoute] int id, CancellationToken cancellationToken)
         {
-            var package = await _shipmentService.GetShipmentByIdAsync(id, cancellationToken);
-            return Ok(package);
+            var shipment = await _shipmentService.GetShipmentByIdAsync(id, cancellationToken);
+            return Ok(shipment);
         }
         
         [HttpGet("tracking/{trackingNumber}")]
@@ -44,20 +44,20 @@ namespace MiniNova.API.Controllers
         
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> PostShipment([FromBody] CreateShipmentDTO package, CancellationToken cancellationToken)
+        public async Task<IActionResult> PostShipment([FromBody] CreateShipmentDTO shipmentDto, CancellationToken cancellationToken)
         {
             var userIdString = User.FindFirst("userid")?.Value;
             var userId = int.Parse(userIdString!);
             
-            var created = await _shipmentService.CreateShipmentAsync(package, cancellationToken, userId);    
+            var created = await _shipmentService.CreateShipmentAsync(shipmentDto, cancellationToken, userId);    
             return CreatedAtAction(nameof(GetShipment), new { id = created.Id }, created);
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin, Operator")]
-        public async Task<IActionResult> PutShipment(int id, [FromBody] UpdateShipmentDTO updatePackage, CancellationToken cancellationToken)
+        public async Task<IActionResult> PutShipment(int id, [FromBody] UpdateShipmentDTO shipmentDto, CancellationToken cancellationToken)
         {
-            await _shipmentService.UpdateShipmentAsync(updatePackage, id, cancellationToken);
+            await _shipmentService.UpdateShipmentAsync(shipmentDto, id, cancellationToken);
             return NoContent();
         }
 

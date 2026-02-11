@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MiniNova.DAL.Context;
 using MiniNova.DAL.Models;
+using MiniNova.DAL.Records;
 using MiniNova.DAL.Repositories.Interfaces;
 
 namespace MiniNova.DAL.Repositories;
@@ -17,13 +18,61 @@ public class PersonRepository : IPersonRepository
 
     public async Task<Person?> GetByIdAsync(int personId, CancellationToken cancellationToken)
     {
-        var person = await _dbContext.People.FirstOrDefaultAsync(p => p.Id == personId, cancellationToken);
+        var person = await _dbContext.People
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == personId, cancellationToken);
         return person;
     }
 
     public async Task<Person?> GetByEmailAsync(string email, CancellationToken cancellationToken)
     {
-        var person = await _dbContext.People.FirstOrDefaultAsync(p => p.Email == email, cancellationToken);
+        var person = await _dbContext.People
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Email == email, cancellationToken);
         return person;
+    }
+
+    public async Task<PaginationResult<Person>> GetPagedAsync(int skip, int take, CancellationToken cancellationToken)
+    {
+        var query = _dbContext.People.AsNoTracking().AsQueryable();
+        
+        var totalCount = await query.CountAsync(cancellationToken);
+        
+        var items = await query
+            .OrderBy(p => p.LastName)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+        
+        return new PaginationResult<Person>(items, totalCount);
+    }
+
+    public async Task<int?> GetPersonIdByLoginAsync(string login, CancellationToken cancellationToken)
+    {
+        var account = await _dbContext.Accounts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Login == login, cancellationToken);
+        
+        return account?.PersonId;
+    }
+
+    public async Task AddAsync(Person person, CancellationToken cancellationToken)
+    {
+        await _dbContext.People.AddAsync(person, cancellationToken);
+    }
+
+    public void Update(Person person)
+    {
+        _dbContext.People.Update(person);
+    }
+
+    public void Remove(Person person)
+    {
+        _dbContext.People.Remove(person);
+    }
+
+    public async Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

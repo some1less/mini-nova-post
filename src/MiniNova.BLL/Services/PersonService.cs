@@ -4,50 +4,46 @@ using MiniNova.BLL.Interfaces;
 using MiniNova.BLL.Pagination;
 using MiniNova.DAL.Context;
 using MiniNova.DAL.Models;
+using MiniNova.DAL.Repositories.Interfaces;
 
 namespace MiniNova.BLL.Services;
 
 public class PersonService : IPersonService
 {
     
-    private readonly NovaDbContext _dbContext;
+    private readonly IPersonRepository _personRepository;
 
-    public PersonService(NovaDbContext dbContext)
+    public PersonService(IPersonRepository personRepository)
     {
-        _dbContext = dbContext;
+        _personRepository = personRepository;
     }
     
     public async Task<PagedResponse<PersonAllDTO>> GetAllAsync(CancellationToken cancellationToken, int page = 1, int pageSize = 10)
     {
-        var query = _dbContext.People.AsNoTracking().AsQueryable();
-
-        var totalCount = await query.CountAsync(cancellationToken);
+        var skip = (page - 1) * pageSize;
         
-        var items = await query
-            .OrderBy(p => p.LastName)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+        var result = await _personRepository.GetPagedAsync(skip, pageSize, cancellationToken);
+        
+        var dtos = result.Items
             .Select(p => new PersonAllDTO
             {
                 Id = p.Id,
                 FullName = $"{p.FirstName} {p.LastName}",
             })
-            .ToListAsync(cancellationToken);
+            .ToList();
 
         return new PagedResponse<PersonAllDTO>
         {
-            Items = items,
+            Items = dtos,
             Page = page,
             PageSize = pageSize,
-            TotalCount = totalCount
+            TotalCount = result.TotalCount
         };
     }
 
     public async Task<PersonResponseDTO?> GetPersonByIdAsync(int id, CancellationToken cancellationToken)
     {
-        var person = await _dbContext.People
-            .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+        var person = await _personRepository.GetByIdAsync(id, cancellationToken);
 
         if (person == null)
         {
@@ -76,8 +72,8 @@ public class PersonService : IPersonService
             Phone = phoneNumber
         };
         
-        _dbContext.People.Add(person);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _personRepository.AddAsync(person, cancellationToken);
+        await _personRepository.SaveChangesAsync(cancellationToken);
 
         return new PersonResponseDTO()
         {
@@ -90,9 +86,7 @@ public class PersonService : IPersonService
 
     public async Task UpdatePersonAsync(PersonDTO updatePerson, int personId, CancellationToken cancellationToken)
     {
-        var person = await _dbContext.People
-            .FirstOrDefaultAsync(p => p.Id == personId, cancellationToken);
-
+        var person = await _personRepository.GetByIdAsync(personId, cancellationToken);
         if (person == null) throw new KeyNotFoundException($"Person with id {personId} not found");
 
         person.FirstName = updatePerson.FirstName;
@@ -100,25 +94,23 @@ public class PersonService : IPersonService
         person.Email = updatePerson.Email;
         person.Phone = string.IsNullOrWhiteSpace(updatePerson.Phone) ? null : updatePerson.Phone;
         
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        _personRepository.Update(person);
+        await _personRepository.SaveChangesAsync(cancellationToken);
 
     }
 
     public async Task DeletePersonAsync(int personId, CancellationToken cancellationToken)
     {
-        var person = await _dbContext.People
-            .FirstOrDefaultAsync(p => p.Id == personId, cancellationToken);
+        var person = await _personRepository.GetByIdAsync(personId, cancellationToken);
         if (person == null) throw new KeyNotFoundException($"Person with id {personId} not found");
         
-        _dbContext.People.Remove(person);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        _personRepository.Remove(person);
+        await _personRepository.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<int?> GetPersonIdByLoginAsync(string login, CancellationToken cancellationToken)
     {
-        var account = await _dbContext.Accounts
-            .FirstOrDefaultAsync(a => a.Login == login, cancellationToken);
-        
-        return account?.PersonId;
+        var account = await _personRepository.GetPersonIdByLoginAsync(login, cancellationToken);
+        return account;
     }
 }
