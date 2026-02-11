@@ -55,7 +55,9 @@ public class ShipmentRepository : IShipmentRepository
 
     public async Task<PaginationResult<Shipment>> GetPagedAsync(int skip, int pageSize, CancellationToken cancellationToken)
     {
-        var query = _dbContext.Shipments.AsNoTracking().AsQueryable();
+        var query = _dbContext.Shipments
+            .AsNoTracking()
+            .AsQueryable();
         
         var totalCount = await query.CountAsync(cancellationToken);
         
@@ -114,5 +116,10 @@ public class ShipmentRepository : IShipmentRepository
     public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+    
+    public async Task<bool> ExistsAsync(int id, CancellationToken token)
+    {
+        return await _dbContext.Shipments.AnyAsync(s => s.Id == id, token);
     }
 }

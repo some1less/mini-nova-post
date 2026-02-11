@@ -3,37 +3,37 @@ using MiniNova.BLL.DTO.Tracking;
 using MiniNova.BLL.Interfaces;
 using MiniNova.DAL.Context;
 using MiniNova.DAL.Models;
+using MiniNova.DAL.Repositories.Interfaces;
 
 namespace MiniNova.BLL.Services;
 
 public class TrackingService : ITrackingService
 {
-    
-    private readonly NovaDbContext _dbContext;
+    private readonly IShipmentRepository _shipmentRepository;
+    private readonly ITrackingRepository _trackingRepository;
+    private readonly IStatusRepository _statusRepository;
+    private readonly IOperatorRepository _operatorRepository;
+    private readonly IAccountRepository _accountRepository;
 
-    public TrackingService(NovaDbContext dbContext)
+    public TrackingService(IShipmentRepository shipmentRepository,
+        ITrackingRepository trackingRepository,  IStatusRepository statusRepository,
+        IOperatorRepository operatorRepository,  IAccountRepository accountRepository)
     {
-        _dbContext = dbContext;
+
+        _shipmentRepository = shipmentRepository;
+        _trackingRepository = trackingRepository;
+        _statusRepository = statusRepository;
+        _operatorRepository = operatorRepository;
+        _accountRepository = accountRepository;
     }
 
 
-    public async Task<IEnumerable<TrackingResponseDTO>> GetHistoryByPackageIdAsync(int packageId, CancellationToken cancellationToken)
+    public async Task<IEnumerable<TrackingResponseDTO>> GetHistoryByPackageIdAsync(int shipmentId, CancellationToken cancellationToken)
     {
-        var package = await _dbContext.Shipments
-            .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == packageId, cancellationToken);
-        if (package == null) throw new KeyNotFoundException($"Package with id {packageId} not found");
-        
-        var history = await _dbContext.Trackings
-            .AsNoTracking()
-            .Where(t => t.ShipmentId == packageId)
-            .Include(t => t.Status) 
-            .Include(t => t.Operator)
-            .ThenInclude(o => o!.Person)
-            .Include(t => t.Operator)
-            .ThenInclude(o => o!.Occupation)
-            .OrderByDescending(t => t.UpdateTime)
-            .ToListAsync(cancellationToken);
+        var shipment = await _shipmentRepository.ExistsAsync(shipmentId, cancellationToken);
+        if (!shipment) throw new KeyNotFoundException($"Shipment with id {shipmentId} not found");
+
+        var history = await _trackingRepository.GetAllAsync(shipmentId, cancellationToken);
 
         return history.Select(t => new TrackingResponseDTO()
         {
@@ -47,26 +47,19 @@ public class TrackingService : ITrackingService
         });
     }
 
-    public async Task<TrackingResponseDTO> AddTrackingAsync(TrackingDTO trackingDto, string operatorLogin, CancellationToken cancellationToken)
+    public async Task<TrackingResponseDTO> AddTrackingAsync(TrackingDTO trackingDto, string operatorLogin,
+        CancellationToken cancellationToken)
     {
-        var package = await _dbContext.Shipments.FirstOrDefaultAsync(p => p.Id == trackingDto.PackageId,  cancellationToken);
-        if (package == null) throw new KeyNotFoundException($"Package with id {trackingDto.PackageId} not found");
+        var shipment = await _shipmentRepository.ExistsAsync(trackingDto.PackageId, cancellationToken);
+        if (!shipment) throw new KeyNotFoundException($"Shipment with id {trackingDto.PackageId} not found");
         
-        var statusEntity = await _dbContext.Statuses.FirstOrDefaultAsync(s => s.Id == trackingDto.StatusId, cancellationToken);
+        var statusEntity = await _statusRepository.GetByIdAsync(trackingDto.StatusId, cancellationToken);
         if (statusEntity == null) throw new KeyNotFoundException($"Status ID {trackingDto.StatusId} not found");
 
-        var account = await _dbContext.Accounts
-            .AsNoTracking()
-            .Include(a => a.Person)
-            .FirstOrDefaultAsync(a => a.Login == operatorLogin, cancellationToken);
-            
+        var account = await _accountRepository.GetByLoginAsync(operatorLogin, cancellationToken);
         if (account == null) throw new KeyNotFoundException($"Account {operatorLogin} not found");
 
-        var oper = await _dbContext.Operators
-            .Include(o => o.Occupation)
-            .Include(o => o.Person)
-            .FirstOrDefaultAsync(o => o.PersonId == account.PersonId,  cancellationToken);
-
+        var oper = await _operatorRepository.GetByPersonIdAsync(account.PersonId, cancellationToken);
         if (oper == null) throw new UnauthorizedAccessException("Current user is not an Operator");
         
         var tracking = new Tracking
@@ -77,8 +70,8 @@ public class TrackingService : ITrackingService
             UpdateTime = DateTime.UtcNow,
         };
         
-        await  _dbContext.Trackings.AddAsync(tracking, cancellationToken);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await  _trackingRepository.AddAsync(tracking, cancellationToken);
+        await _trackingRepository.SaveChangesAsync(cancellationToken);
         
         return new TrackingResponseDTO
         {
@@ -92,24 +85,26 @@ public class TrackingService : ITrackingService
 
     public async Task UpdateTrackingAsync(int trackingId, UpdateTrackingDTO trackingDto, CancellationToken cancellationToken)
     {
-        var tracking = await _dbContext.Trackings.FirstOrDefaultAsync(t => t.Id == trackingId,  cancellationToken);
+        var tracking = await _trackingRepository.GetByIdAsync(trackingId, cancellationToken);
         if (tracking == null) throw new KeyNotFoundException($"Tracking {trackingId} not found");
 
-        var statusExists = await _dbContext.Statuses.AnyAsync(s => s.Id == trackingDto.StatusId, cancellationToken);
+        var statusExists = await _statusRepository.IfExistsAsync(trackingDto.StatusId,  cancellationToken);
         if (!statusExists) throw new KeyNotFoundException($"Status ID {trackingDto.StatusId} not found");
 
         tracking.StatusId = trackingDto.StatusId;
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        
+        _trackingRepository.Update(tracking);
+        await _trackingRepository.SaveChangesAsync(cancellationToken);
     }
 
     public async Task DeleteTrackingAsync(int trackingId, CancellationToken cancellationToken)
     {
-        var tracking = await _dbContext.Trackings.FirstOrDefaultAsync(t => t.Id == trackingId, cancellationToken);
-        
+        var tracking = await _trackingRepository.GetByIdAsync(trackingId, cancellationToken);
+            
         if (tracking == null) 
             throw new KeyNotFoundException($"Tracking record with id {trackingId} not found");
 
-        _dbContext.Trackings.Remove(tracking);
-        await _dbContext.SaveChangesAsync(cancellationToken);    
+        _trackingRepository.Delete(tracking);
+        await _trackingRepository.SaveChangesAsync(cancellationToken); 
     }
 }

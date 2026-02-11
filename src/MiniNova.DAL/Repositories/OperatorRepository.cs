@@ -33,4 +33,12 @@ public class OperatorRepository : IOperatorRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(o => o.Id == operatorId, cancellationToken);
     }
+
+    public async Task<Operator?> GetByPersonIdAsync(int personId, CancellationToken cancellationToken)
+    {
+        return await _dbContext.Operators
+            .Include(o => o.Occupation)
+            .Include(o => o.Person)
+            .FirstOrDefaultAsync(o => o.PersonId == personId,  cancellationToken);
+    }
 }

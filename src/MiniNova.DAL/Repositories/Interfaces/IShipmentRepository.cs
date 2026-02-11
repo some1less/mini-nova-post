@@ -17,4 +17,6 @@ public interface IShipmentRepository
     void Remove(Shipment shipment);
     
     Task SaveChangesAsync(CancellationToken cancellationToken);
+
+    Task<bool> ExistsAsync(int id, CancellationToken token);
 }

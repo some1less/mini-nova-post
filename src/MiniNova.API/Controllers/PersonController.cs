@@ -33,12 +33,13 @@ namespace MiniNova.API.Controllers
         {
             
             var currentLogin = User.FindFirst("name")?.Value;
+            if (currentLogin == null) throw new Exception("Cannot retrieve user name error");
                 
             var hasFullAccess = User.IsInRole("Admin") || User.IsInRole("Operator");
 
             if (!hasFullAccess)
             {
-                var requestingPersonId = await _personService.GetPersonIdByLoginAsync(currentLogin!,  cancellationToken);
+                var requestingPersonId = await _personService.GetPersonIdByLoginAsync(currentLogin,  cancellationToken);
                     
                 if (requestingPersonId == null) 
                     return Unauthorized(new { error = "User profile not found" });
