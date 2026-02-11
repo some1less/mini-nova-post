@@ -71,7 +71,6 @@ public class PersonService : IPersonService
         };
         
         await _personRepository.AddAsync(person, cancellationToken);
-        await _personRepository.SaveChangesAsync(cancellationToken);
 
         return new PersonResponseDTO()
         {
@@ -92,8 +91,7 @@ public class PersonService : IPersonService
         person.Email = updatePerson.Email;
         person.Phone = string.IsNullOrWhiteSpace(updatePerson.Phone) ? null : updatePerson.Phone;
         
-        _personRepository.Update(person);
-        await _personRepository.SaveChangesAsync(cancellationToken);
+        await _personRepository.Update(person, cancellationToken);
 
     }
 
@@ -102,8 +100,7 @@ public class PersonService : IPersonService
         var person = await _personRepository.GetByIdAsync(personId, cancellationToken);
         if (person == null) throw new KeyNotFoundException($"Person with id {personId} not found");
         
-        _personRepository.Remove(person);
-        await _personRepository.SaveChangesAsync(cancellationToken);
+        await _personRepository.Remove(person, cancellationToken);
     }
 
     public async Task<int?> GetPersonIdByLoginAsync(string login, CancellationToken cancellationToken)

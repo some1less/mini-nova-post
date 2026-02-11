@@ -57,20 +57,23 @@ public class PersonRepository : IPersonRepository
     public async Task AddAsync(Models.Person person, CancellationToken cancellationToken)
     {
         await _dbContext.People.AddAsync(person, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public void Update(Models.Person person)
+    public async Task Update(Models.Person person, CancellationToken cancellationToken)
     {
         _dbContext.People.Update(person);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public void Remove(Models.Person person)
+    public async Task Remove(Models.Person person, CancellationToken cancellationToken)
     {
         _dbContext.People.Remove(person);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task SaveChangesAsync(CancellationToken cancellationToken)
+    public async Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken)
     {
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        return await _dbContext.People.AnyAsync(p => p.Email == email, cancellationToken);
     }
 }

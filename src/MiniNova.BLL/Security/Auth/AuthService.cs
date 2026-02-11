@@ -5,30 +5,34 @@ using MiniNova.BLL.Exceptions;
 using MiniNova.BLL.Security.Tokens;
 using MiniNova.DAL.Context;
 using MiniNova.DAL.Models;
+using MiniNova.DAL.Repositories.Account;
+using MiniNova.DAL.Repositories.Person;
 
 namespace MiniNova.BLL.Security.Auth;
 
 public class AuthService : IAuthService
 {
-    
-    private readonly NovaDbContext _dbContext;
     private readonly ITokenService _tokenService;
     private readonly IPasswordHasher<Account> _passwordHasher;
+    
+    private readonly IAccountRepository _accountRepository;
+    private readonly IPersonRepository _personRepository;
 
-    public AuthService(NovaDbContext dbContext, ITokenService tokenService, IPasswordHasher<Account> passwordHasher)
+    public AuthService(ITokenService tokenService, IPasswordHasher<Account> passwordHasher,
+        IAccountRepository accountRepository, IPersonRepository personRepository)
     {
-        _dbContext = dbContext;
         _tokenService = tokenService;
         _passwordHasher = passwordHasher;
+        
+        _accountRepository = accountRepository;
+        _personRepository = personRepository;
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
     {
-        var user = await _dbContext.Accounts
-            .Include(r=>r.Role)
-            .Include(r=>r.Person)
-            .FirstOrDefaultAsync(a=> a.Login == request.Login, cancellationToken);
-        if (user == null) throw new UnauthorizedAccessException("Invalid login");
+        var user = await _accountRepository.GetWithPersonAndRoleByLoginAsync(request.Login, cancellationToken);
+        if (user == null) 
+            throw new UnauthorizedAccessException("Invalid login or password");
         
         var verification = _passwordHasher.VerifyHashedPassword(
             user,
@@ -36,7 +40,8 @@ public class AuthService : IAuthService
             request.Password
         );
 
-        if (verification == PasswordVerificationResult.Failed) throw new UnauthorizedAccessException("Invalid login or password");
+        if (verification == PasswordVerificationResult.Failed) 
+            throw new UnauthorizedAccessException("Invalid login or password");
         
         var accessToken = _tokenService.GenerateToken(
             user.Login,
@@ -47,57 +52,40 @@ public class AuthService : IAuthService
 
         return new AuthResponse
         {
-
             AccessToken = accessToken,
-            Login = user.Login,
         };
 
     }
 
     public async Task RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
-        var login = await _dbContext.Accounts.AnyAsync(a => a.Login == request.Login, cancellationToken);
-        if (login) throw new ValidationException("login", "Login is already taken");
+        var login = await _accountRepository.ExistsByLoginAsync(request.Login, cancellationToken);
+        if (login) 
+            throw new ValidationException("login", "Login is already taken");
         
-        var email = await _dbContext.People.AnyAsync(a => a.Email == request.Email, cancellationToken);
-        if (email) throw new ValidationException("email", "User with this email already exists");
+        var email = await _personRepository.ExistsByEmailAsync(request.Email, cancellationToken);
+        if (email) 
+            throw new ValidationException("email", "User with this email already exists");
         
-        var userRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.Name == "User", cancellationToken);
-        if (userRole == null) throw new InvalidOperationException("Role with name 'User' not found");
-        
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
-
-        try
+        var newPerson = new Person()
         {
-            var newPerson = new Person()
-            {
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                Email = request.Email,
-                Phone = request.Phone,
-            };
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Email = request.Email,
+            Phone = request.Phone,
+        };
             
-            // _dbContext.People.Add(newPerson);
-            
-            var newAccount = new Account()
-            {
-                Login = request.Login,
-                PasswordHash = "",
-                RoleId =  userRole.Id, // 1 - admin 2 - operator 3 - user
-                Person = newPerson,
-            };
-            
-            newAccount.PasswordHash = _passwordHasher.HashPassword(newAccount, request.Password);
-            
-            _dbContext.Accounts.Add(newAccount);
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            await transaction.CommitAsync(cancellationToken);
-            
-        } catch
+        var newAccount = new Account()
         {
-            await transaction.RollbackAsync(cancellationToken);
-            throw;
-        }
+            Login = request.Login,
+            PasswordHash = "",
+            RoleId =  3, // 1 - admin 2 - operator 3 - user
+            Person = newPerson,
+        };
+        
+        var hashedPassword = _passwordHasher.HashPassword(newAccount, request.Password);
+        newAccount.PasswordHash = hashedPassword;
+            
+        await _accountRepository.AddAsync(newAccount, cancellationToken);
     }
 }

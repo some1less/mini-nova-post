@@ -13,8 +13,8 @@ public interface IPersonRepository
 
     // Запис
     Task AddAsync(Models.Person person, CancellationToken cancellationToken);
-    void Update(Models.Person person);
-    void Remove(Models.Person person);
-    Task SaveChangesAsync(CancellationToken cancellationToken);
+    Task Update(Models.Person person, CancellationToken cancellationToken);
+    Task Remove(Models.Person person, CancellationToken cancellationToken);
     
+    Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken);
 }
