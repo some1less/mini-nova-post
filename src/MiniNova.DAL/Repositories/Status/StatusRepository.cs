@@ -1,9 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MiniNova.DAL.Context;
-using MiniNova.DAL.Models;
-using MiniNova.DAL.Repositories.Interfaces;
 
-namespace MiniNova.DAL.Repositories;
+namespace MiniNova.DAL.Repositories.Status;
 
 public class StatusRepository : IStatusRepository
 {
@@ -14,7 +12,7 @@ public class StatusRepository : IStatusRepository
         _dbContext = dbContext;
     }
 
-    public async Task<Status?> GetByIdAsync(int statusId, CancellationToken cancellationToken)
+    public async Task<Models.Status?> GetByIdAsync(int statusId, CancellationToken cancellationToken)
     {
         return await _dbContext.Statuses
             .AsNoTracking()

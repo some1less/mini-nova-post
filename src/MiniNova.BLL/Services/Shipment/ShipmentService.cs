@@ -3,8 +3,9 @@ using MiniNova.BLL.DTO.Shipment;
 using MiniNova.BLL.DTO.Tracking;
 using MiniNova.BLL.Generators;
 using MiniNova.BLL.Pagination;
-using MiniNova.DAL.Repositories.Interfaces;
-using MiniNova.DAL.Models;
+using MiniNova.DAL.Repositories.Location;
+using MiniNova.DAL.Repositories.Person;
+using MiniNova.DAL.Repositories.Shipment;
 
 namespace MiniNova.BLL.Services.Shipment;
 

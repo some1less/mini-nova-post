@@ -1,9 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MiniNova.DAL.Context;
-using MiniNova.DAL.Models;
-using MiniNova.DAL.Repositories.Interfaces;
 
-namespace MiniNova.DAL.Repositories;
+namespace MiniNova.DAL.Repositories.Tracking;
 
 public class TrackingRepository : ITrackingRepository
 {
@@ -14,7 +12,7 @@ public class TrackingRepository : ITrackingRepository
         _dbContext = dbContext;
     }
 
-    public async Task<List<Tracking>> GetAllAsync(int shipmentId, CancellationToken cancellationToken)
+    public async Task<List<Models.Tracking>> GetAllAsync(int shipmentId, CancellationToken cancellationToken)
     {
         var history = await _dbContext.Trackings
             .AsNoTracking()
@@ -30,7 +28,7 @@ public class TrackingRepository : ITrackingRepository
         return history;
     }
 
-    public async Task<Tracking?> GetByIdAsync(int trackingId, CancellationToken cancellationToken)
+    public async Task<Models.Tracking?> GetByIdAsync(int trackingId, CancellationToken cancellationToken)
     {
         var tracking = await _dbContext.Trackings
             .FirstOrDefaultAsync(t => t.Id == trackingId, cancellationToken);
@@ -39,7 +37,7 @@ public class TrackingRepository : ITrackingRepository
             
     }
 
-    public async Task<Tracking?> GetByIdReadOnlyAsync(int trackingId, CancellationToken cancellationToken)
+    public async Task<Models.Tracking?> GetByIdReadOnlyAsync(int trackingId, CancellationToken cancellationToken)
     {
         return await _dbContext.Trackings
                 .AsNoTracking()
@@ -47,17 +45,17 @@ public class TrackingRepository : ITrackingRepository
         
     }
 
-    public async Task AddAsync(Tracking tracking, CancellationToken cancellationToken)
+    public async Task AddAsync(Models.Tracking tracking, CancellationToken cancellationToken)
     {
         await _dbContext.Trackings.AddAsync(tracking, cancellationToken);
     }
 
-    public void Update(Tracking tracking)
+    public void Update(Models.Tracking tracking)
     {
         _dbContext.Trackings.Update(tracking);
     }
 
-    public void Delete(Tracking tracking)
+    public void Delete(Models.Tracking tracking)
     {
         _dbContext.Trackings.Remove(tracking);
     }

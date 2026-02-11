@@ -1,5 +1,5 @@
 using MiniNova.BLL.DTO.Operator;
-using MiniNova.DAL.Repositories.Interfaces;
+using MiniNova.DAL.Repositories.Operator;
 
 namespace MiniNova.BLL.Services.Operator;
 

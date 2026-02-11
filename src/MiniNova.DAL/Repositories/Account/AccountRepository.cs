@@ -1,9 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MiniNova.DAL.Context;
-using MiniNova.DAL.Models;
-using MiniNova.DAL.Repositories.Interfaces;
 
-namespace MiniNova.DAL.Repositories;
+namespace MiniNova.DAL.Repositories.Account;
 
 public class AccountRepository : IAccountRepository
 {
@@ -14,7 +12,7 @@ public class AccountRepository : IAccountRepository
         _dbContext = dbContext;
     }
 
-    public async Task<Account?> GetByLoginAsync(string login, CancellationToken cancellationToken)
+    public async Task<Models.Account?> GetByLoginAsync(string login, CancellationToken cancellationToken)
     {
         return await _dbContext.Accounts
             .AsNoTracking()

@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MiniNova.BLL.DTO.People;
 using MiniNova.BLL.Pagination;
 using MiniNova.DAL.Models;
-using MiniNova.DAL.Repositories.Interfaces;
+using MiniNova.DAL.Repositories.Person;
 
 namespace MiniNova.BLL.Services.Person;
 

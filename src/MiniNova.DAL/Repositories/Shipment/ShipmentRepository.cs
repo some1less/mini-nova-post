@@ -1,10 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using MiniNova.DAL.Context;
-using MiniNova.DAL.Models;
 using MiniNova.DAL.Records;
-using MiniNova.DAL.Repositories.Interfaces;
 
-namespace MiniNova.DAL.Repositories;
+namespace MiniNova.DAL.Repositories.Shipment;
 
 public class ShipmentRepository : IShipmentRepository
 {
@@ -15,7 +13,7 @@ public class ShipmentRepository : IShipmentRepository
         _dbContext = dbContext;
     }
     
-    public async Task<Shipment?> GetByIdWithDetailsAsync(int shipmentId, CancellationToken cancellationToken)
+    public async Task<Models.Shipment?> GetByIdWithDetailsAsync(int shipmentId, CancellationToken cancellationToken)
     {
         var shipment = await _dbContext.Shipments
             .Include(d => d.Destination)
@@ -34,7 +32,7 @@ public class ShipmentRepository : IShipmentRepository
         return shipment;
     }
 
-    public async Task<Shipment?> GetByTrackNoAsync(string trackNo, CancellationToken cancellationToken)
+    public async Task<Models.Shipment?> GetByTrackNoAsync(string trackNo, CancellationToken cancellationToken)
     {
         var shipment = await _dbContext.Shipments
             .Include(d => d.Destination)
@@ -53,7 +51,7 @@ public class ShipmentRepository : IShipmentRepository
         return shipment;
     }
 
-    public async Task<PaginationResult<Shipment>> GetPagedAsync(int skip, int pageSize, CancellationToken cancellationToken)
+    public async Task<PaginationResult<Models.Shipment>> GetPagedAsync(int skip, int pageSize, CancellationToken cancellationToken)
     {
         var query = _dbContext.Shipments
             .AsNoTracking()
@@ -73,10 +71,10 @@ public class ShipmentRepository : IShipmentRepository
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
         
-        return new PaginationResult<Shipment>(items, totalCount);
+        return new PaginationResult<Models.Shipment>(items, totalCount);
     }
 
-    public async Task<PaginationResult<Shipment>> GetByUserIdPagedAsync(int userId, int skip, int take, CancellationToken cancellationToken)
+    public async Task<PaginationResult<Models.Shipment>> GetByUserIdPagedAsync(int userId, int skip, int take, CancellationToken cancellationToken)
     {
         var query = _dbContext.Shipments
             .AsNoTracking()
@@ -95,20 +93,20 @@ public class ShipmentRepository : IShipmentRepository
             .Take(take)
             .ToListAsync(cancellationToken);
            
-        return new PaginationResult<Shipment>(items, totalCount);
+        return new PaginationResult<Models.Shipment>(items, totalCount);
     }
 
-    public async Task AddAsync(Shipment shipment, CancellationToken cancellationToken)
+    public async Task AddAsync(Models.Shipment shipment, CancellationToken cancellationToken)
     {
         await _dbContext.Shipments.AddAsync(shipment, cancellationToken);
     }
 
-    public void Update(Shipment shipment)
+    public void Update(Models.Shipment shipment)
     {
         _dbContext.Shipments.Update(shipment);
     }
 
-    public void Remove(Shipment shipment)
+    public void Remove(Models.Shipment shipment)
     {
         _dbContext.Shipments.Remove(shipment);
     }

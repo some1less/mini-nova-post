@@ -15,8 +15,13 @@ using MiniNova.BLL.Services.Shipment;
 using MiniNova.BLL.Services.Tracking;
 using MiniNova.DAL.Context;
 using MiniNova.DAL.Models;
-using MiniNova.DAL.Repositories;
-using MiniNova.DAL.Repositories.Interfaces;
+using MiniNova.DAL.Repositories.Account;
+using MiniNova.DAL.Repositories.Location;
+using MiniNova.DAL.Repositories.Operator;
+using MiniNova.DAL.Repositories.Person;
+using MiniNova.DAL.Repositories.Shipment;
+using MiniNova.DAL.Repositories.Status;
+using MiniNova.DAL.Repositories.Tracking;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);

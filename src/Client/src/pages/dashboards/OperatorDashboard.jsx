@@ -36,8 +36,8 @@ const OperatorDashboard = () => {
 
     const getStatusClass = (status) => {
         switch (status?.toLowerCase()) {
-            case 'active': return 'status-active';
             case 'registered': return 'status-active';
+            case 'submitted': return 'status-active';
             case 'delivered': return 'status-finished';
             case 'canceled': return 'status-canceled';
             case 'in transit': return 'status-transit';
@@ -52,7 +52,7 @@ const OperatorDashboard = () => {
     );
 
     const activeCount = packages.filter(p =>
-        p.status === 'Active' || p.status === 'Registered' || p.status === 'In Transit'
+        p.status === 'Submitted' || p.status === 'Registered' || p.status === 'In Transit'
     ).length;
 
     return (

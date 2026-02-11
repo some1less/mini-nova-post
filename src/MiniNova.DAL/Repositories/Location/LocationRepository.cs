@@ -1,9 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MiniNova.DAL.Context;
-using MiniNova.DAL.Models;
-using MiniNova.DAL.Repositories.Interfaces;
-
-namespace MiniNova.DAL.Repositories;
+namespace MiniNova.DAL.Repositories.Location;
 
 public class LocationRepository : ILocationRepository
 {
@@ -14,7 +11,7 @@ public class LocationRepository : ILocationRepository
         _dbContext = dbContext;
     }
     
-    public async Task<Location?> GetByIdAsync(int locationId, CancellationToken cancellationToken)
+    public async Task<Models.Location?> GetByIdAsync(int locationId, CancellationToken cancellationToken)
     {
         var location = await _dbContext.Locations.FirstOrDefaultAsync(l => l.Id == locationId, cancellationToken);
         return location;

@@ -1,10 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using MiniNova.DAL.Context;
-using MiniNova.DAL.Models;
 using MiniNova.DAL.Records;
-using MiniNova.DAL.Repositories.Interfaces;
 
-namespace MiniNova.DAL.Repositories;
+namespace MiniNova.DAL.Repositories.Person;
 
 public class PersonRepository : IPersonRepository
 {
@@ -16,7 +14,7 @@ public class PersonRepository : IPersonRepository
         _dbContext = dbContext;
     }
 
-    public async Task<Person?> GetByIdAsync(int personId, CancellationToken cancellationToken)
+    public async Task<Models.Person?> GetByIdAsync(int personId, CancellationToken cancellationToken)
     {
         var person = await _dbContext.People
             .AsNoTracking()
@@ -24,7 +22,7 @@ public class PersonRepository : IPersonRepository
         return person;
     }
 
-    public async Task<Person?> GetByEmailAsync(string email, CancellationToken cancellationToken)
+    public async Task<Models.Person?> GetByEmailAsync(string email, CancellationToken cancellationToken)
     {
         var person = await _dbContext.People
             .AsNoTracking()
@@ -32,7 +30,7 @@ public class PersonRepository : IPersonRepository
         return person;
     }
 
-    public async Task<PaginationResult<Person>> GetPagedAsync(int skip, int take, CancellationToken cancellationToken)
+    public async Task<PaginationResult<Models.Person>> GetPagedAsync(int skip, int take, CancellationToken cancellationToken)
     {
         var query = _dbContext.People.AsNoTracking().AsQueryable();
         
@@ -44,7 +42,7 @@ public class PersonRepository : IPersonRepository
             .Take(take)
             .ToListAsync(cancellationToken);
         
-        return new PaginationResult<Person>(items, totalCount);
+        return new PaginationResult<Models.Person>(items, totalCount);
     }
 
     public async Task<int?> GetPersonIdByLoginAsync(string login, CancellationToken cancellationToken)
@@ -56,17 +54,17 @@ public class PersonRepository : IPersonRepository
         return account?.PersonId;
     }
 
-    public async Task AddAsync(Person person, CancellationToken cancellationToken)
+    public async Task AddAsync(Models.Person person, CancellationToken cancellationToken)
     {
         await _dbContext.People.AddAsync(person, cancellationToken);
     }
 
-    public void Update(Person person)
+    public void Update(Models.Person person)
     {
         _dbContext.People.Update(person);
     }
 
-    public void Remove(Person person)
+    public void Remove(Models.Person person)
     {
         _dbContext.People.Remove(person);
     }

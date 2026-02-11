@@ -1,5 +1,9 @@
 using MiniNova.BLL.DTO.Tracking;
-using MiniNova.DAL.Repositories.Interfaces;
+using MiniNova.DAL.Repositories.Account;
+using MiniNova.DAL.Repositories.Operator;
+using MiniNova.DAL.Repositories.Shipment;
+using MiniNova.DAL.Repositories.Status;
+using MiniNova.DAL.Repositories.Tracking;
 
 namespace MiniNova.BLL.Services.Tracking;
 

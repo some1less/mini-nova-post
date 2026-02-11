@@ -1,9 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MiniNova.DAL.Context;
-using MiniNova.DAL.Models;
-using MiniNova.DAL.Repositories.Interfaces;
-
-namespace MiniNova.DAL.Repositories;
+namespace MiniNova.DAL.Repositories.Operator;
 
 public class OperatorRepository : IOperatorRepository
 {
@@ -14,7 +11,7 @@ public class OperatorRepository : IOperatorRepository
         _dbContext = dbContext;
     }
     
-    public async Task<List<Operator>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<List<Models.Operator>> GetAllAsync(CancellationToken cancellationToken)
     {
         var operators = await _dbContext.Operators
             .Include(o => o.Person)
@@ -25,7 +22,7 @@ public class OperatorRepository : IOperatorRepository
         return operators;
     }
 
-    public async Task<Operator?> GetByIdAsync(int operatorId, CancellationToken cancellationToken)
+    public async Task<Models.Operator?> GetByIdAsync(int operatorId, CancellationToken cancellationToken)
     {
         return await _dbContext.Operators
             .Include(o => o.Person)
@@ -34,7 +31,7 @@ public class OperatorRepository : IOperatorRepository
             .FirstOrDefaultAsync(o => o.Id == operatorId, cancellationToken);
     }
 
-    public async Task<Operator?> GetByPersonIdAsync(int personId, CancellationToken cancellationToken)
+    public async Task<Models.Operator?> GetByPersonIdAsync(int personId, CancellationToken cancellationToken)
     {
         return await _dbContext.Operators
             .Include(o => o.Occupation)

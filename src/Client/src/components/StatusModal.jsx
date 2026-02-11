@@ -7,20 +7,34 @@ const StatusModal = ({ pkg, onClose, onUpdateSuccess }) => {
     const [newStatus, setNewStatus] = useState(pkg.status);
     const [updating, setUpdating] = useState(false);
 
-    const STATUS_OPTIONS = ["Registered", "In Transit", "Delivered", "Canceled"];
+    const STATUS_OPTIONS = ["Registered", "Submitted", "In Transit", "Delivered", "Canceled"];
 
+    const STATUS_MAP = {
+        "Registered": 1,
+        "Submitted": 2,
+        "In Transit": 3,
+        "Delivered": 4,
+        "Canceled": 5
+    }
+    
     const handleUpdate = async () => {
         if (!newStatus) return;
 
         setUpdating(true);
         try {
+            const statusIdToSend = STATUS_MAP[newStatus];
+
+            if (!statusIdToSend) {
+                alert("Invalid status selected");
+                return;
+            }
+            
             await apiClient.post('/trackings', {
                 packageId: pkg.id,
-                status: newStatus
+                statusId: statusIdToSend
             });
 
             onUpdateSuccess(pkg.id, newStatus);
-
             onClose();
         } catch (error) {
             console.error("Failed to update status", error);
