@@ -45,11 +45,13 @@ POSTGRES_USER=XXXX
 POSTGRES_PASSWORD=XXXX
 
 # JWT Configuration
-JWT_KEY=YourSuperSecretKeyMustBeAtLeast64CharactersLong12345
 JWT_ISSUER=http://localhost:XXXX
 JWT_AUDIENCE=http://localhost:XXXX
 JWT_VALID_MINUTES=60
 ```
+
+Since the project is integrated with asymmetric security, it is necessary to create a folder `Keys` inside the MiniNova.API, where public and private keys are stored.
+Check out `MiniNova.API/Extensions/AuthKeysExtension` for further set up.
 
 3. **Run the Application:** Open your terminal in the project root and execute:
 ```Bash
