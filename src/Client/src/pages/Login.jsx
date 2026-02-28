@@ -3,7 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import apiClient from '../api/apiClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { Package } from 'lucide-react';
-import './Login.css'; // Імпорт CSS
+import './Login.css';
 
 const Login = () => {
     const [loginData, setLoginData] = useState({ login: '', password: '' });

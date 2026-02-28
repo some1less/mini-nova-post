@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import {useContext, useState} from 'react';
 import apiClient from '../api/apiClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserPlus, CheckCircle } from 'lucide-react';
 import './Register.css';
+import {AuthContext} from "../context/AuthContext.jsx";
 
 const Register = () => {
     const navigate = useNavigate();
@@ -15,6 +16,8 @@ const Register = () => {
         login: '',
         password: ''
     });
+    
+    const { login } = useContext(AuthContext);
 
     const [errors, setErrors] = useState({});
     const [generalError, setGeneralError] = useState('');
@@ -41,9 +44,16 @@ const Register = () => {
         try {
             await apiClient.post('/auth/register', payload);
 
+            const loginResponse = await apiClient.post('/auth/login', {
+                login: formData.login,
+                password: formData.password
+            });
+            
+            login(loginResponse.data.accessToken);
+            
             setShowSuccess(true);
             setTimeout(() => {
-                navigate('/login');
+                navigate('/');
             }, 2000);
 
         } catch (err) {
