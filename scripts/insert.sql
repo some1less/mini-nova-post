@@ -188,3 +188,91 @@ SELECT setval(pg_get_serial_sequence('"Invoices"', 'Id'), coalesce(max("Id"), 1)
 -- SELECT setval(pg_get_serial_sequence('"Trackings"', 'Id'), coalesce(max("Id"), 1), max("Id") IS NOT null) FROM "Trackings";
 
 COMMIT;
+
+CREATE OR REPLACE FUNCTION generate_valid_tracking(p_country text, p_size_id int, p_weight numeric)
+RETURNS text AS $$
+DECLARE
+    v_code text;
+        v_weight_part text;
+        v_random_part text;
+        v_numeric_string text;
+        v_sum int := 0;
+        v_weights int[] := ARRAY[3, 7, 1, 5, 9, 3, 7, 1, 5, 9, 3];
+        v_check_digit int;
+        i int;
+BEGIN
+            CASE p_country
+        WHEN 'Ukraine' THEN v_code := 'UA';
+            WHEN 'Poland' THEN v_code := 'PL';
+            WHEN 'Germany' THEN v_code := 'DE';
+            WHEN 'France' THEN v_code := 'FR';
+            WHEN 'Italy' THEN v_code := 'IT';
+            WHEN 'Spain' THEN v_code := 'ES';
+            WHEN 'United Kingdom' THEN v_code := 'GB';
+            WHEN 'Netherlands' THEN v_code := 'NL';
+ELSE v_code := 'EU';
+END CASE;
+
+        v_weight_part := LPAD(LEAST((p_weight * 10)::int, 999)::text, 3, '0');
+
+        v_random_part := LPAD(floor(random() * 10000000)::int::text, 7, '0');
+
+        v_numeric_string := p_size_id::text || v_weight_part || v_random_part;
+
+        FOR i IN 1..11 LOOP
+        v_sum := v_sum + (SUBSTRING(v_numeric_string FROM i FOR 1)::int * v_weights[i]);
+END LOOP;
+
+        v_check_digit := (10 - (v_sum % 10)) % 10;
+
+RETURN v_code || v_numeric_string || v_check_digit::text;
+END;
+$$ LANGUAGE plpgsql;
+    
+CREATE OR REPLACE PROCEDURE seed_shipments(num_rows INT)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    i INT;
+        v_origin_id INT;
+        v_country TEXT;
+        v_size_id INT;
+        v_weight NUMERIC;
+        v_new_shipment_id INT;
+BEGIN
+            FOR i IN 1..num_rows LOOP
+
+    SELECT "Id", "Country" INTO v_origin_id, v_country FROM "Locations" ORDER BY random() LIMIT 1;
+    SELECT "Id" INTO v_size_id FROM "Sizes" ORDER BY random() LIMIT 1;
+            v_weight := (random() * 40 + 0.5)::decimal;
+
+    INSERT INTO "Shipments" (
+        "TrackId", "ShipperId", "ConsigneeId", "Description",
+        "SizeId", "Weight", "OriginId", "DestinationId", "CreatedAt"
+    )
+    VALUES (
+               generate_valid_tracking(v_country, v_size_id, v_weight),
+               (SELECT "Id" FROM "People" ORDER BY random() LIMIT 1),
+               (SELECT "Id" FROM "People" ORDER BY random() LIMIT 1),
+               'Load-test package #' || i,
+               v_size_id,
+               v_weight,
+               v_origin_id,
+               (SELECT "Id" FROM "Locations" ORDER BY random() LIMIT 1),
+               NOW() - (random() * interval '60 days')
+           ) RETURNING "Id" INTO v_new_shipment_id;
+
+    INSERT INTO "Trackings" ("ShipmentId", "StatusId", "UpdateTime", "OperatorId")
+    VALUES (v_new_shipment_id, 1, NOW() - (random() * interval '59 days'), 1)
+        ON CONFLICT DO NOTHING;
+
+    IF i % 5000 = 0 THEN
+        COMMIT;
+END IF;
+END LOOP;
+
+        PERFORM setval(pg_get_serial_sequence('"Shipments"', 'Id'), coalesce(max("Id"), 1), max("Id") IS NOT null) FROM "Shipments";
+END;
+$$;
+
+CALL seed_shipments(25000);

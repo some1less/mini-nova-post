@@ -444,3 +444,5 @@ src/MiniNova.API/*.json
 *.pem
 *.key
 **/Keys/
+
+banchmark.js
