@@ -5,32 +5,30 @@ namespace MiniNova.API.Extensions;
 
 public static class AuthKeysExtension
 {
-    public static RsaSecurityKey AddAsyncKeyLoading(this IServiceCollection services)
+    public static RsaSecurityKey AddAsyncKeyLoading(this IServiceCollection services, IConfiguration config)
     {
         // PUBLIC KEY PROCESSING
-        var publicKeyPath = Path.Combine(AppContext.BaseDirectory, "Keys", "public_key.pem");
-        if (!File.Exists(publicKeyPath))
-        {
-            throw new FileNotFoundException("[ERROR 500] Public key not found");
-        }
+        var publicKeyBase64 = config["Jwt:PublicKeyBase64"];
 
-        var publicKey = File.ReadAllText(publicKeyPath);
+        if (string.IsNullOrEmpty(publicKeyBase64))
+            throw new Exception("[ERROR 500] Public key environment variable not found");
 
+        var publicKeyPem = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(publicKeyBase64));
+        
         var publicRsa = RSA.Create();
-        publicRsa.ImportFromPem(publicKey);
+        publicRsa.ImportFromPem(publicKeyPem);
         var publicSecurityKey = new RsaSecurityKey(publicRsa);
 
         // PRIVATE KEY PROCESSING
-        var privateKeyPath = Path.Combine(AppContext.BaseDirectory, "Keys", "private_key.pem");
-        if (!File.Exists(privateKeyPath))
-        {
-            throw new FileNotFoundException("[ERROR 500] Private key not found");
-        }
+        var privateKeyBase64 = config["Jwt:PrivateKeyBase64"];
+        
+        if (string.IsNullOrEmpty(privateKeyBase64))
+            throw new Exception("[ERROR 500] Private key environment variable not found");
 
-        var privateKey = File.ReadAllText(privateKeyPath);
+        var privateKeyPem = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(privateKeyBase64));
 
         var privateRsa = RSA.Create();
-        privateRsa.ImportFromPem(privateKey);
+        privateRsa.ImportFromPem(privateKeyPem);
         var privateSecurityKey = new RsaSecurityKey(privateRsa);
 
         // MAIN PROCESSING

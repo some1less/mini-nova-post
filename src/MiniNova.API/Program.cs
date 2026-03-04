@@ -27,7 +27,7 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 
 // ------ LOADING KEYS
-var issuerSigningKey = builder.Services.AddAsyncKeyLoading();
+var issuerSigningKey = builder.Services.AddAsyncKeyLoading(builder.Configuration);
 
 // ----- CONFIG ------
 var connectionString = builder.Configuration.GetConnectionString("MNPConnection")
@@ -79,7 +79,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173") // using vite
+            policy.WithOrigins("http://localhost:5173", builder.Configuration["FrontendUrl"] ?? "") // using vite
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
