@@ -9,7 +9,9 @@ import Dashboard from './pages/Dashboard';
 import CreatePackage from './pages/CreatePackage';
 import PackageDetails from './pages/PackageDetails';
 
-const ProtectedRoute = ({ children }) => {
+import { ReactNode } from 'react';
+
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     const { user } = useContext(AuthContext);
     const token = sessionStorage.getItem('token');
 
