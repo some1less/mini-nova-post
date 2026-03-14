@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "es2021",
+        "lib": ["es2021", "DOM", "DOM.Iterable"],
+        "module": "esnext",
+        "skipLibCheck": true,
+        "allowJs": true,
+        "moduleResolution": "bundler", // Vite
+        "isolatedModules": true,
+        "noEmit": true, // do not generate js, Vite's work
+        "jsx": "react-jsx",
+        "strict": true
+    },
+    "include": ["src"],
+    "references": [{"path": "./tsconfig.node.json"}]
+}

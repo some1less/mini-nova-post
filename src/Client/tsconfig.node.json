@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "composite": true, // open to tsconfig
+        "module": "esnext",
+        "skipLibCheck": true,
+        "allowSyntheticDefaultImports": true,
+        "moduleResolution": "node", // Vite
+        "strict": true
+    },
+    "include": ["vite.config.ts"]
+}
